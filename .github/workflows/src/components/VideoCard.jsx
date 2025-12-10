@@ -56,7 +56,7 @@ function VideoCard({
           {displayTitle}
         </h3>
         {video.episodeGuess && (
-          <span className="video-episode">Ep {video.episodeGuess}</span>
+          <span className="video-episode">Video {video.episodeGuess}</span>
         )}
       </div>
 

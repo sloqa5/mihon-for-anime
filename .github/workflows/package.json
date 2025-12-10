@@ -1,6 +1,7 @@
 {
-  "name": "my-anime-library",
+  "name": "tablet-streaming-app",
   "version": "1.0.0",
+  "description": "Netflix-like video streaming app for Android tablets",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -8,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "hls.js": "^1.6.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

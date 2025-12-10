@@ -1,4 +1,4 @@
-const CACHE_NAME = "myanime-shell-v1";
+const CACHE_NAME = "videostream-shell-v1";
 const OFFLINE_URLS = ["/", "/index.html", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

@@ -15,6 +15,19 @@
     "Segoe UI", sans-serif;
 }
 
+/* Light theme */
+.theme-light {
+  --bg: #ffffff;
+  --bg-elevated: #f8fafc;
+  --bg-elevated-2: #f1f5f9;
+  --accent: #f97316;
+  --accent-soft: rgba(249, 115, 22, 0.1);
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border-subtle: #e5e7eb;
+  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
 *,
 *::before,
 *::after {
@@ -24,8 +37,16 @@
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top, #18181b 0, #020617 40%, #000 100%);
   color: var(--text);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.theme-dark {
+  background: radial-gradient(circle at top, #18181b 0, #020617 40%, #000 100%);
+}
+
+.theme-light {
+  background: var(--bg);
 }
 
 .app-root {
@@ -76,6 +97,33 @@ body {
 .header-tagline {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.theme-toggle-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(31, 41, 55, 0.95);
+  transform: translateY(-1px);
+}
+
+.theme-light .theme-toggle-btn {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(229, 231, 235, 0.9);
+}
+
+.theme-light .theme-toggle-btn:hover {
+  background: rgba(226, 232, 240, 0.95);
 }
 
 /* Layout */
@@ -490,6 +538,60 @@ body {
 
 .subtitle-form .remote-input {
   flex: 1;
+}
+
+.keyboard-help {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+}
+
+.theme-light .keyboard-help {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(229, 231, 235, 0.9);
+}
+
+.keyboard-shortcuts {
+  font-size: 12px;
+}
+
+.keyboard-shortcuts strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px;
+}
+
+.shortcuts-grid span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+kbd {
+  background: rgba(55, 65, 81, 0.9);
+  border: 1px solid rgba(75, 85, 99, 0.9);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text);
+  min-width: 20px;
+  text-align: center;
+  display: inline-block;
+}
+
+.theme-light kbd {
+  background: rgba(229, 231, 235, 0.9);
+  border-color: rgba(209, 213, 219, 0.9);
+  color: var(--text);
 }
 
 /* Toolbar (search + filters) */

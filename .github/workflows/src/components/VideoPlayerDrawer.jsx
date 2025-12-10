@@ -27,6 +27,7 @@ function VideoPlayerDrawer({
   const [subtitleSrc, setSubtitleSrc] = useState(null);
   const [subtitleLabel, setSubtitleLabel] = useState("");
   const [subtitleUrlInput, setSubtitleUrlInput] = useState("");
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   useEffect(() => {
     setPlaybackRate(playerPrefs.playbackRate || 1);
@@ -90,6 +91,74 @@ function VideoPlayerDrawer({
       onPrefsChange({ playbackRate, muted: isMuted, autoPlayNext });
     }
   }, [playbackRate, isMuted, autoPlayNext, onPrefsChange]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!videoRef.current) return;
+
+      // Don't handle shortcuts when typing in inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ':
+          e.preventDefault();
+          handleTogglePlay();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          seekBy(-5);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          seekBy(5);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          seekBy(30);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          seekBy(-30);
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          handleFullscreen();
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          handleToggleMute();
+          break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'p':
+        case 'P':
+          e.preventDefault();
+          handlePrevious();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onClose();
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+          e.preventDefault();
+          const rate = parseInt(e.key);
+          handleRateChange(rate === 1 ? 1 : rate === 2 ? 1.25 : rate === 3 ? 1.5 : 2);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [video]);
 
   if (!video) return null;
 
@@ -236,7 +305,7 @@ function VideoPlayerDrawer({
             <div className="player-subtitle-row">
               {video.episodeGuess && (
                 <span className="player-episode">
-                  Episode {video.episodeGuess}
+                  Video {video.episodeGuess}
                 </span>
               )}
               {video.sourceType === "remote" && (
@@ -343,8 +412,34 @@ function VideoPlayerDrawer({
               <button className="chip" onClick={handleFullscreen} type="button">
                 Fullscreen
               </button>
+              <button
+                className="chip"
+                onClick={() => setShowKeyboardHelp(!showKeyboardHelp)}
+                type="button"
+                title="Keyboard shortcuts"
+              >
+                ⌨️ Help
+              </button>
             </div>
           </div>
+
+          {showKeyboardHelp && (
+            <div className="player-controls-row keyboard-help">
+              <div className="keyboard-shortcuts">
+                <strong>Keyboard Shortcuts:</strong>
+                <div className="shortcuts-grid">
+                  <span><kbd>Space</kbd> Play/Pause</span>
+                  <span><kbd>←/→</kbd> Seek ±5s</span>
+                  <span><kbd>↑/↓</kbd> Seek ±30s</span>
+                  <span><kbd>F</kbd> Fullscreen</span>
+                  <span><kbd>M</kbd> Mute</span>
+                  <span><kbd>N/P</kbd> Next/Previous</span>
+                  <span><kbd>1-4</kbd> Speed (1x, 1.25x, 1.5x, 2x)</span>
+                  <span><kbd>Esc</kbd> Close player</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="player-controls-row subtitle-row">
             <form className="subtitle-form" onSubmit={handleSubtitleUrl}>
