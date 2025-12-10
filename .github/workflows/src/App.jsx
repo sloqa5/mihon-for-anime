@@ -6,8 +6,8 @@ import VideoPlayerDrawer from "./components/VideoPlayerDrawer";
 import { parseFilename } from "./utils/filenameParser";
 import { searchAnimeByTitle } from "./services/anilist";
 
-const PROGRESS_STORAGE_KEY = "myAnimePlaybackProgress";
-const PLAYER_PREFS_KEY = "myAnimePlayerPrefs";
+const PROGRESS_STORAGE_KEY = "videoStreamPlaybackProgress";
+const PLAYER_PREFS_KEY = "videoStreamPlayerPrefs";
 const VIDEO_EXTENSIONS = ["mp4", "mkv", "webm", "m3u8"];
 
 function resolveUrlMaybe(url, base) {
@@ -315,7 +315,7 @@ function App() {
       existing.anilistTitle ||
       existing.file?.name ||
       existing.remoteUrl ||
-      "Anime";
+      "Video";
 
     try {
       const result = await searchAnimeByTitle(searchTitle);
@@ -769,7 +769,7 @@ function App() {
                       </span>
                       {video.episodeGuess && (
                         <span className="continue-episode">
-                          Ep {video.episodeGuess}
+                          Video {video.episodeGuess}
                         </span>
                       )}
                     </div>

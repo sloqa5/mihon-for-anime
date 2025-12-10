@@ -42,7 +42,7 @@ function Sidebar({
         if (!url) return null;
 
         const beforeUrl = line.replace(url, "").trim();
-        const numberedFallback = `Episode ${index + 1}`;
+        const numberedFallback = `Video ${index + 1}`;
         return {
           url,
           title: beforeUrl || playlistTitle.trim() || numberedFallback,
@@ -64,12 +64,12 @@ function Sidebar({
 
   const handleDemoPlaylist = () => {
     const demo = [
-      "Episode 1 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=1",
-      "Episode 2 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=2",
-      "Episode 3 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=3"
+      "Video 1 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=1",
+      "Video 2 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=2",
+      "Video 3 | https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?ep=3"
     ].join("\n");
     setPlaylistText(demo);
-    setPlaylistTitle("Demo Season");
+    setPlaylistTitle("Demo Playlist");
   };
 
   const handleImportPage = (e) => {
@@ -167,13 +167,13 @@ function Sidebar({
           <input
             className="remote-input"
             type="text"
-            placeholder="Season / playlist title (optional)"
+            placeholder="Playlist title (optional)"
             value={playlistTitle}
             onChange={(e) => setPlaylistTitle(e.target.value)}
           />
           <textarea
             className="remote-textarea"
-            placeholder={"One URL per line. Optional title before URL.\nEpisode 1 | https://example.com/ep1.mp4"}
+            placeholder={"One URL per line. Optional title before URL.\nVideo 1 | https://example.com/video1.mp4"}
             value={playlistText}
             onChange={(e) => setPlaylistText(e.target.value)}
             rows={4}
@@ -181,7 +181,7 @@ function Sidebar({
           />
           <div className="playlist-actions">
             <button type="submit" className="primary-button">
-              + Add Season Links
+              + Add Playlist Links
             </button>
             <button
               type="button"
@@ -193,7 +193,7 @@ function Sidebar({
           </div>
         </form>
         <p className="sidebar-hint">
-          Paste multiple lines (Title | URL). We will add them in order.
+          Paste multiple lines (Title | URL). Videos will be added in order.
         </p>
       </div>
 
@@ -204,7 +204,7 @@ function Sidebar({
           onClick={onMatchAll}
           disabled={isMatchingAll || totalVideos === 0}
         >
-          {isMatchingAll ? "Matching all..." : "Match all with AniList"}
+          {isMatchingAll ? "Matching all..." : "Match video metadata"}
         </button>
         {matchProgress.total > 0 && (
           <p className="sidebar-status">
