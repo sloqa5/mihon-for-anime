@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:web": "vite build",
+    "build:apk": "npm run build:web && npm run cap:sync && npm run android:build",
+    "cap:sync": "npx cap sync android",
+    "android:build": "cd android && ./gradlew assembleDebug && cd ..",
+    "android:release": "cd android && ./gradlew assembleRelease && cd ..",
+    "android:clean": "cd android && ./gradlew clean && cd ..",
+    "build:full": "npm run android:clean && npm run build:apk"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

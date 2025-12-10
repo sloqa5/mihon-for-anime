@@ -84,17 +84,16 @@ function Sidebar({
       <div className="sidebar-section">
         <h2 className="sidebar-title">Library</h2>
         <label className="file-picker-button">
-          <span>+ Add Folder / Files</span>
+          <span>+ Add Files</span>
           <input
             type="file"
             multiple
-            webkitdirectory="true"
-            directory=""
+            accept="video/*"
             onChange={onFilesSelected}
           />
         </label>
         <p className="sidebar-hint">
-          Local files only. Everything stays on your device.
+          Select multiple video files from your device. All files stay local.
         </p>
       </div>
 
@@ -157,7 +156,9 @@ function Sidebar({
           </p>
         )}
         <p className="sidebar-hint">
-          We look for direct video links (.mp4/.mkv/.webm/.m3u8) on the page and add them in order.
+          We look for direct video links (.mp4/.mkv/.webm/.m3u8) on the page.
+          <br />
+          <strong>Note:</strong> Most websites block this due to CORS security. Works best with your own servers or CORS-enabled sites.
         </p>
       </div>
 

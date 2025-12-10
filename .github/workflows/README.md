@@ -2,11 +2,23 @@
 
 A powerful, Netflix-inspired video streaming application designed specifically for Android tablets. Watch videos from any URL, organize your content, and enjoy professional-grade video playback features.
 
-## 🎉 NEW: Standalone APK Available!
+## 🚀 Quick Start
 
-**Download the ready-to-install APK**: `VideoStream.apk` (4.2MB)
+**Download**: `VideoStream-v1.0.0.apk`
 
-**No server required!** Just install the APK and start streaming immediately.
+**Installation**: See [INSTALL.md](./INSTALL.md) for complete setup guide
+
+**No server required!** Standalone native Android app.
+
+## 📦 What's New in v1.0.0
+
+- ✅ Production-ready APK build
+- ✅ Improved tablet optimization
+- ✅ Better error handling
+- ✅ Fixed all critical bugs
+- ✅ Enhanced touch targets for tablets
+- ✅ Landscape mode optimization
+- ✅ Improved performance
 
 ## ✨ Features
 
@@ -20,49 +32,16 @@ A powerful, Netflix-inspired video streaming application designed specifically f
 - 📱 **Native Android App** - Standalone APK with tablet optimization
 - 🎛️ **Smart Organization** - Automatic series grouping and episode ordering
 
-## 📱 Android Tablet Installation Guide
+## 📱 Quick Installation
 
-### 🚀 Method 1: Install APK (Recommended - No Server Required!)
+**For detailed installation steps, see [INSTALL.md](./INSTALL.md)**
 
-#### Step 1: Download APK
-1. **Download**: `VideoStream.apk` (4.2MB)
-2. **Transfer to tablet** via USB, cloud storage, or file sharing
-
-#### Step 2: Enable Unknown Sources
-1. **Go to Settings** → **Security & Privacy**
-2. **Enable "Unknown Sources"** or "Install from Unknown Sources"
-3. **Grant permission** for file manager or browser
-
-#### Step 3: Install APK
-1. **Open the APK file** using your file manager
-2. **Tap "Install"** when prompted
-3. **Wait for installation** to complete
-4. **Open the app** from your home screen
-
-#### Step 4: Grant Permissions
-- **Storage**: For local file access (optional)
-- **Network**: For streaming URLs (required)
-- **Notifications**: For playback notifications (optional)
-
-### 🌐 Method 2: PWA Installation (Browser-based)
-
-#### Step 1: Access the App
-1. **Open Chrome Browser** on your Android tablet
-2. **Navigate to**: `http://your-server-ip:5173/`
-   - If running locally, replace with your computer's IP address
-   - For deployment, use the hosted URL
-
-#### Step 2: Install as Native App
-1. **Tap the menu** (⋮) in Chrome's address bar
-2. **Select "Add to Home Screen"** or "Install App"
-3. **Enter app name** (default: "Video Stream for Tablets")
-4. **Tap "Add"** or "Install"
-5. **Find the app** on your home screen with the VS icon
-
-#### Step 3: Grant Permissions
-- **Storage**: For local file access (optional)
-- **Network**: For streaming URLs (required)
-- **Notifications**: For playback notifications (optional)
+**Quick Summary:**
+1. Download `VideoStream-v1.0.0.apk`
+2. Transfer to your tablet
+3. Enable "Unknown Sources" in Settings
+4. Tap APK to install
+5. Open and start streaming!
 
 ## 🎯 How to Add Videos
 

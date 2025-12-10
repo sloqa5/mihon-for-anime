@@ -865,3 +865,373 @@ kbd {
 .toast-error {
   border-color: rgba(248, 113, 22, 0.6);
 }
+
+/* ===================================
+   Error Boundary Styles
+   =================================== */
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.error-boundary-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.error-boundary h1 {
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.error-boundary p {
+  margin-bottom: 24px;
+  color: var(--text-muted);
+}
+
+/* ===================================
+   Loading States
+   =================================== */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(249, 115, 22, 0.1);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ===================================
+   Empty States
+   =================================== */
+.empty-state-small {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===================================
+   Inline Edit for Video Title
+   =================================== */
+.video-title-edit {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 2px solid var(--accent);
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  outline: none;
+}
+
+.video-title-edit:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+/* ===================================
+   Tablet Touch Target Improvements
+   =================================== */
+@media (min-width: 768px) {
+  /* Increase all button sizes for easier tapping */
+  .primary-button,
+  .secondary-button {
+    min-height: 44px;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .chip {
+    min-height: 36px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* Larger video cards */
+  .video-card {
+    padding: 12px;
+  }
+
+  /* More spacing in player controls */
+  .player-controls-row {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  /* Bigger touch area for continue watching */
+  .continue-card {
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  .continue-card:hover {
+    background: rgba(31, 41, 55, 0.7);
+  }
+}
+
+/* ===================================
+   Landscape Tablet Optimization
+   =================================== */
+@media (min-width: 768px) and (orientation: landscape) {
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 16px;
+  }
+
+  .continue-row {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+
+  .app-layout {
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+  }
+
+  .sidebar {
+    position: relative;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+
+  .app-main {
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+
+  /* Player takes more horizontal space */
+  .player-container {
+    max-width: 90vw;
+  }
+
+  .player-video {
+    max-height: 70vh;
+  }
+}
+
+/* ===================================
+   Portrait Tablet Optimization
+   =================================== */
+@media (max-width: 767px) and (orientation: portrait) {
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .continue-row {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  /* Stack player controls vertically */
+  .player-controls-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* ===================================
+   Keyboard Help Enhancements
+   =================================== */
+.keyboard-shortcuts strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  font-size: 13px;
+}
+
+.shortcuts-grid kbd {
+  background: rgba(55, 65, 81, 0.8);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--accent);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+/* ===================================
+   Improved Progress Bars
+   =================================== */
+.video-progress {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.video-progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, #f97316, #fb923c);
+  transition: width 0.3s ease;
+}
+
+/* ===================================
+   Toast Notifications Improvement
+   =================================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.3s ease;
+  max-width: 90vw;
+  text-align: center;
+  min-width: 200px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-info {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  color: var(--text);
+}
+
+.toast-success {
+  background: rgba(5, 150, 105, 0.95);
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  color: white;
+}
+
+.toast-error {
+  background: rgba(239, 68, 68, 0.95);
+  border: 1px solid rgba(248, 113, 113, 0.6);
+  color: white;
+}
+
+/* ===================================
+   Smooth Transitions
+   =================================== */
+.video-card,
+.continue-card,
+.chip,
+button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.continue-card:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* ===================================
+   Image Loading Skeleton
+   =================================== */
+.video-thumb.placeholder {
+  background: linear-gradient(
+    90deg,
+    rgba(31, 41, 55, 0.8) 25%,
+    rgba(55, 65, 81, 0.9) 50%,
+    rgba(31, 41, 55, 0.8) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* When image loads, remove shimmer */
+.video-thumb img {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===================================
+   Mobile Safari Fixes
+   =================================== */
+@supports (-webkit-touch-callout: none) {
+  .player-video {
+    /* Prevent iOS Safari from showing controls */
+    -webkit-playsinline: true;
+    playsinline: true;
+  }
+}
+
+/* ===================================
+   Accessibility Improvements
+   =================================== */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -5,10 +5,11 @@ import VideoGrid from "./components/VideoGrid";
 import VideoPlayerDrawer from "./components/VideoPlayerDrawer";
 import { parseFilename } from "./utils/filenameParser";
 import { searchAnimeByTitle } from "./services/anilist";
+import { STORAGE_KEYS, VIDEO_CONFIG, UI_CONFIG } from "./constants";
 
-const PROGRESS_STORAGE_KEY = "videoStreamPlaybackProgress";
-const PLAYER_PREFS_KEY = "videoStreamPlayerPrefs";
-const VIDEO_EXTENSIONS = ["mp4", "mkv", "webm", "m3u8"];
+const PROGRESS_STORAGE_KEY = STORAGE_KEYS.PLAYBACK_PROGRESS;
+const PLAYER_PREFS_KEY = STORAGE_KEYS.PLAYER_PREFS;
+const VIDEO_EXTENSIONS = VIDEO_CONFIG.EXTENSIONS;
 
 function resolveUrlMaybe(url, base) {
   try {
@@ -111,7 +112,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMode, setFilterMode] = useState("all"); // all | watching | unwatched | watched
 
-  const showToast = (message, type = "info", timeout = 2500) => {
+  const showToast = (message, type = "info", timeout = UI_CONFIG.TOAST_DURATION_MS) => {
     setToast({ message, type });
     if (timeout) {
       setTimeout(() => setToast(null), timeout);
@@ -270,12 +271,12 @@ function App() {
     try {
       const res = await fetch(pageUrl);
       if (!res.ok) {
-        throw new Error(`Request failed (${res.status})`);
+        throw new Error(`Couldn't load page. Server returned error ${res.status}`);
       }
       const html = await res.text();
       const links = extractVideoLinksFromHtml(html, pageUrl);
       if (!links.length) {
-        throw new Error("No direct video links found (.mp4, .mkv, .webm, .m3u8)");
+        throw new Error("No video links found on this page. Try a different URL or check if the site blocks scraping.");
       }
 
       const entries = links.map((link, index) => {
@@ -294,7 +295,7 @@ function App() {
     } catch (err) {
       setPageImportStatus(err.message || "Failed to import links");
       setPageImportIsError(true);
-      showToast(err.message || "Import failed", "error", 3000);
+      showToast(err.message || "Import failed", "error", UI_CONFIG.TOAST_DURATION_ERROR_MS);
     } finally {
       setIsImportingPage(false);
     }
@@ -320,7 +321,7 @@ function App() {
     try {
       const result = await searchAnimeByTitle(searchTitle);
       if (!result) {
-        throw new Error("No match found");
+        throw new Error("Couldn't find metadata for this title. Try renaming it.");
       }
 
       setVideos((prev) => {
@@ -376,7 +377,7 @@ function App() {
             ? {
                 ...v,
                 status: "error",
-                errorMessage: err.message || "Error matching metadata"
+                errorMessage: err.message || "Failed to fetch metadata. Check your internet connection."
               }
             : v
         )
@@ -395,6 +396,7 @@ function App() {
     setIsMatchingAll(true);
     setMatchProgress({ done: 0, total: queue.length });
     for (const v of queue) {
+      // Intentionally sequential - prevents API rate limiting
       // eslint-disable-next-line no-await-in-loop
       await handleMatchOne(v.id);
       setMatchProgress((prev) => ({ ...prev, done: prev.done + 1 }));
@@ -520,7 +522,7 @@ function App() {
         if (v.id !== videoId) return v;
 
         const progress = duration ? currentTime / duration : 0;
-        const isWatched = progress > 0.9;
+        const isWatched = progress > VIDEO_CONFIG.WATCHED_THRESHOLD;
         const lastWatchedAt = Date.now();
 
         updatedVideo = {
@@ -637,9 +639,9 @@ function App() {
   }
 
   const continueWatching = videos
-    .filter((v) => v.progress > 0.02 && !v.isWatched && v.lastWatchedAt)
+    .filter((v) => v.progress > VIDEO_CONFIG.CONTINUE_WATCHING_THRESHOLD && !v.isWatched && v.lastWatchedAt)
     .sort((a, b) => b.lastWatchedAt - a.lastWatchedAt)
-    .slice(0, 12);
+    .slice(0, VIDEO_CONFIG.CONTINUE_WATCHING_MAX_ITEMS);
 
   return (
     <div className="app-root">
