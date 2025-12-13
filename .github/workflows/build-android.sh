@@ -1,56 +1,89 @@
 #!/bin/bash
 
-# Build Android APK without Android Studio
+# Video Stream APK Builder
+# Builds production-ready APK for Android tablets
 
-echo "Setting up environment..."
+set -e  # Exit on any error
 
-# Set environment variables
-export ANDROID_HOME=/opt/android-sdk
+echo "======================================"
+echo "Video Stream APK Builder"
+echo "======================================"
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || { echo "Error: Failed to navigate to script directory"; exit 1; }
+
+echo "Working directory: $(pwd)"
+
+# Set environment variables (if running in CI/CD environment)
+export ANDROID_HOME=${ANDROID_HOME:-/opt/android-sdk}
 export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-21-openjdk-amd64}
 
-# Navigate to project directory
-cd /workspace/cmizwy7fr00fwilocyqx84nw6/mihon-for-anime/.github/workflows
+# Check for required commands
+command -v node >/dev/null 2>&1 || { echo "Error: Node.js is not installed"; exit 1; }
+command -v npm >/dev/null 2>&1 || { echo "Error: npm is not installed"; exit 1; }
 
-echo "Current directory: $(pwd)"
-echo "ANDROID_HOME: $ANDROID_HOME"
-echo "JAVA_HOME: $JAVA_HOME"
+echo ""
+echo "[1/5] Installing dependencies..."
+npm install
 
-# Accept licenses
-echo "Accepting Android SDK licenses..."
-printf 'y\ny\ny\ny\ny\ny\ny\n' | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || echo "License acceptance may have failed"
+echo ""
+echo "[2/5] Building web application..."
+npm run build
 
-# Install required SDK components
-echo "Installing Android SDK components..."
-$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" || echo "SDK component installation may have failed"
-
-# Sync Capacitor
-echo "Syncing Capacitor with Android..."
+echo ""
+echo "[3/5] Syncing with Capacitor..."
 npx cap sync android
 
-# Try to build APK using Gradle
-echo "Attempting to build APK..."
+echo ""
+echo "[4/5] Building Android APK..."
 cd android
 
-# Create debug keystore if it doesn't exist
-if [ ! -f app/debug.keystore ]; then
-    echo "Creating debug keystore..."
-    keytool -genkey -v -keystore app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+# Check if gradlew exists
+if [ ! -f "./gradlew" ]; then
+    echo "Error: Gradle wrapper not found"
+    exit 1
 fi
 
-# Build APK
-echo "Building debug APK..."
+# Make gradlew executable
+chmod +x ./gradlew
+
+# Build debug APK
 ./gradlew assembleDebug
 
-if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
-    echo "✅ APK built successfully!"
-    echo "APK location: app/build/outputs/apk/debug/app-debug.apk"
-    cp app/build/outputs/apk/debug/app-debug.apk ../VideoStream.apk
-    echo "✅ APK copied to VideoStream.apk"
-else
-    echo "❌ APK build failed"
-    echo "Checking for build errors..."
-    ls -la app/build/outputs/apk/debug/ || echo "Debug output directory doesn't exist"
-fi
+# Check if APK was created
+if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+    echo ""
+    echo "[5/5] Success! APK built successfully"
 
-echo "Build process completed."
+    # Get app version from package.json
+    VERSION=$(node -p "require('../package.json').version")
+    APK_NAME="VideoStream-v${VERSION}.apk"
+
+    # Copy to project root with version
+    cp app/build/outputs/apk/debug/app-debug.apk "../${APK_NAME}"
+
+    # Get APK size
+    APK_SIZE=$(du -h "../${APK_NAME}" | cut -f1)
+
+    echo ""
+    echo "======================================"
+    echo "✅ BUILD COMPLETE"
+    echo "======================================"
+    echo "APK Location: ${APK_NAME}"
+    echo "APK Size: ${APK_SIZE}"
+    echo ""
+    echo "Install on your tablet:"
+    echo "1. Transfer ${APK_NAME} to your device"
+    echo "2. Enable 'Install from Unknown Sources'"
+    echo "3. Tap the APK to install"
+    echo "======================================"
+else
+    echo ""
+    echo "======================================"
+    echo "❌ BUILD FAILED"
+    echo "======================================"
+    echo "APK was not created. Check errors above."
+    exit 1
+fi

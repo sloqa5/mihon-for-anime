@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 
 function VideoPlayerDrawer({
@@ -158,7 +158,7 @@ function VideoPlayerDrawer({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [video]);
+  }, [video, handleTogglePlay, handleToggleMute, handleFullscreen, handleNext, handlePrevious, seekBy, handleRateChange, onClose]);
 
   if (!video) return null;
 
@@ -185,21 +185,14 @@ function VideoPlayerDrawer({
     }
   };
 
-  const seekBy = (seconds) => {
+  const seekBy = useCallback((seconds) => {
     if (!videoRef.current) return;
     const { duration = 0, currentTime = 0 } = videoRef.current;
     const nextTime = Math.min(Math.max(currentTime + seconds, 0), duration || currentTime + seconds);
     videoRef.current.currentTime = nextTime;
-  };
+  }, []);
 
-  const handleSkipIntro = () => {
-    if (!videoRef.current) return;
-    const duration = videoRef.current.duration || 0;
-    if (duration < 30) return;
-    seekBy(85);
-  };
-
-  const handleTogglePlay = () => {
+  const handleTogglePlay = useCallback(() => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
       videoRef.current.play();
@@ -208,24 +201,17 @@ function VideoPlayerDrawer({
       videoRef.current.pause();
       setIsPaused(true);
     }
-  };
+  }, []);
 
-  const handleRateChange = (rate) => {
-    setPlaybackRate(rate);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-    }
-  };
-
-  const handleToggleMute = () => {
+  const handleToggleMute = useCallback(() => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     if (videoRef.current) {
       videoRef.current.muted = nextMuted;
     }
-  };
+  }, [isMuted]);
 
-  const handleFullscreen = () => {
+  const handleFullscreen = useCallback(() => {
     const node = containerRef.current;
     if (!node) return;
     if (document.fullscreenElement) {
@@ -233,19 +219,33 @@ function VideoPlayerDrawer({
     } else {
       node.requestFullscreen?.();
     }
-  };
+  }, []);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (hasNext && typeof onNext === "function") {
       onNext(video.id);
     }
-  };
+  }, [hasNext, onNext, video]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (hasPrevious && typeof onPrevious === "function") {
       onPrevious(video.id);
     }
-  };
+  }, [hasPrevious, onPrevious, video]);
+
+  const handleRateChange = useCallback((rate) => {
+    setPlaybackRate(rate);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = rate;
+    }
+  }, []);
+
+  const handleSkipIntro = useCallback(() => {
+    if (!videoRef.current) return;
+    const duration = videoRef.current.duration || 0;
+    if (duration < 30) return;
+    seekBy(85);
+  }, [seekBy]);
 
   const handlePlay = () => setIsPaused(false);
   const handlePause = () => setIsPaused(true);

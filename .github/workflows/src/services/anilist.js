@@ -1,4 +1,6 @@
-const ANILIST_ENDPOINT = "https://graphql.anilist.co";
+import { API_ENDPOINTS } from "../constants";
+
+const ANILIST_ENDPOINT = API_ENDPOINTS.ANILIST;
 
 export async function searchAnimeByTitle(title) {
   const query = `
@@ -28,7 +30,7 @@ export async function searchAnimeByTitle(title) {
   });
 
   if (!res.ok) {
-    throw new Error("AniList request failed");
+    throw new Error(`AniList API error: ${res.status}. Check your internet connection.`);
   }
 
   const json = await res.json();

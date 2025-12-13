@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 function VideoCard({
   video,
@@ -12,17 +12,36 @@ function VideoCard({
   const displayTitle =
     video.anilistTitle || video.titleGuess || video.file?.name || video.remoteUrl || "Untitled";
   const progressPercent = Math.min((video.progress || 0) * 100, 100);
-  const handleRename = () => {
-    const next = window.prompt("Set title", displayTitle);
-    if (next && next.trim() && typeof onRename === "function") {
-      onRename(next.trim());
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(displayTitle);
+
+  const handleStartEdit = () => {
+    setEditTitle(displayTitle);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editTitle && editTitle.trim() && typeof onRename === "function") {
+      onRename(editTitle.trim());
     }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditTitle(displayTitle);
+    setIsEditing(false);
   };
 
   return (
     <article className="video-card">
       <div className="video-thumb-wrapper" onClick={onSelect}>
-        {video.coverImage ? (
+        {video.status === 'loading' ? (
+          <div className="video-thumb placeholder">
+            <div className="loading-spinner"></div>
+            <span className="loading-text">Matching...</span>
+          </div>
+        ) : video.coverImage ? (
           <img
             src={video.coverImage}
             alt={displayTitle}
@@ -52,9 +71,24 @@ function VideoCard({
       </div>
 
       <div className="video-info">
-        <h3 className="video-title" title={displayTitle}>
-          {displayTitle}
-        </h3>
+        {isEditing ? (
+          <input
+            type="text"
+            className="video-title-edit"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onBlur={handleSaveEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveEdit();
+              if (e.key === 'Escape') handleCancelEdit();
+            }}
+            autoFocus
+          />
+        ) : (
+          <h3 className="video-title" title={displayTitle}>
+            {displayTitle}
+          </h3>
+        )}
         {video.episodeGuess && (
           <span className="video-episode">Video {video.episodeGuess}</span>
         )}
@@ -84,13 +118,21 @@ function VideoCard({
         >
           {video.status === "matched" ? "Retry match" : "Match thumbnail"}
         </button>
-        <button className="icon-button" onClick={onRemove} title="Remove">
+        <button
+          className="icon-button"
+          onClick={() => {
+            if (window.confirm(`Remove "${displayTitle}" from library?`)) {
+              onRemove();
+            }
+          }}
+          title="Remove"
+        >
           X
         </button>
       </div>
 
       <div className="video-actions">
-        <button className="secondary-button" onClick={handleRename}>
+        <button className="secondary-button" onClick={handleStartEdit}>
           Rename
         </button>
         <button
