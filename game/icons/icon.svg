@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a140a" rx="80"/>
+  <!-- F-22 diamond silhouette centered -->
+  <polygon points="256,60 270,130 490,280 440,340 336,310 290,370 256,385 222,370 176,310 72,340 22,280 242,130" fill="#4ade80" opacity="0.9"/>
+  <polygon points="256,300 290,370 256,385 222,370" fill="#22c55e"/>
+  <circle cx="256" cy="256" r="20" fill="#4ade80" opacity="0.3"/>
+</svg>

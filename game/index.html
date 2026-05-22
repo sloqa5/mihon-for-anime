@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a140a">
+  <link rel="manifest" href="manifest.json">
+  <title>AirCommand</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- Tab bar -->
+  <nav id="tab-bar">
+    <button data-tab="base"    class="active">Base</button>
+    <button data-tab="planes">Planes</button>
+    <button data-tab="ops">Ops</button>
+    <button data-tab="prestige">★ Prestige</button>
+  </nav>
+
+  <!-- Stats bar -->
+  <div id="stats-bar">
+    <div>
+      <div class="stat-credits" id="stat-credits">0</div>
+      <div class="stat-rate"    id="stat-rate">+0/s</div>
+    </div>
+    <button id="crate-badge">📦</button>
+  </div>
+
+  <!-- Active boosts bar -->
+  <div id="boost-bar"></div>
+
+  <!-- Canvas -->
+  <div id="canvas-wrap">
+    <canvas id="game-canvas"></canvas>
+  </div>
+
+  <!-- Scroll panel -->
+  <div id="scroll-panel">
+    <div id="panel-base"></div>
+    <div id="panel-planes"  style="display:none"></div>
+    <div id="panel-ops"     style="display:none"></div>
+    <div id="panel-prestige"style="display:none"></div>
+  </div>
+
+</div>
+
+<!-- Crate modal -->
+<div id="crate-modal">
+  <div class="crate-modal-inner">
+    <!-- Populated by ui.js -->
+  </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

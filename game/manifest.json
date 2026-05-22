@@ -1,0 +1,19 @@
+{
+  "name": "Military Aircraft Command",
+  "short_name": "AirCommand",
+  "description": "Deploy aircraft on missions, earn credits, build your air base.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a140a",
+  "theme_color": "#0a140a",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
