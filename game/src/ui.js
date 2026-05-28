@@ -2,7 +2,7 @@ import { AIRCRAFT, getAircraftById } from './aircraft.js';
 import { MISSIONS, getMissionsByAircraft, getMissionDuration, getMissionPayout, getMissionPassive } from './missions.js';
 import { BASE_SECTIONS, getMaxMissionSlots } from './base.js';
 import { CRATE_COLORS, CRATE_COSTS } from './crates.js';
-import { formatCredits, formatTime, formatRate } from './utils.js';
+import { formatCredits, formatTime, formatRate, clamp } from './utils.js';
 
 let callbacks = {};
 let activeTab = 'base';
@@ -128,12 +128,16 @@ function renderStatsBar(st) {
       passive += ac.currentMission.passivePerSec;
     }
   }
-  document.getElementById('stat-credits').textContent = formatCredits(st.credits);
-  document.getElementById('stat-rate').textContent    = formatRate(passive);
+  const credEl = document.getElementById('stat-credits');
+  const rateEl = document.getElementById('stat-rate');
+  if (credEl) credEl.textContent = formatCredits(st.credits);
+  if (rateEl) rateEl.textContent = formatRate(passive);
   const badge = document.getElementById('crate-badge');
   const count = (st.crateQueue || []).length;
-  badge.textContent = count > 0 ? `📦 ${count}` : '📦';
-  badge.classList.toggle('has-crates', count > 0);
+  if (badge) {
+    badge.textContent = count > 0 ? `📦 ${count}` : '📦';
+    badge.classList.toggle('has-crates', count > 0);
+  }
 }
 
 // ── Boost bar ─────────────────────────────────────────────────────────────────
@@ -196,39 +200,50 @@ function renderPlanesPanel(st) {
 }
 
 function renderAircraftCard(acDef, st, now) {
-  const acState = st.aircraft[acDef.id];
-  const unlocked = acState && acState.unlocked;
+  const acState   = st.aircraft[acDef.id];
+  const unlocked  = acState && acState.unlocked;
   const onMission = unlocked && acState.currentMission && acState.currentMission.endTime > now;
-  const upgrades = acState ? acState.upgrades : [0,0,0,0,0];
+  const upgrades  = acState ? acState.upgrades : [0,0,0,0,0];
 
-  const statusText = !unlocked
-    ? `Locked — ${formatCredits(acDef.unlockCost)} Credits`
+  const dotCls    = onMission ? 'on-mission' : unlocked ? 'ready' : 'locked-s';
+  const statusStr = !unlocked
+    ? `Locked — ${formatCredits(acDef.unlockCost)}`
     : onMission
-      ? `On mission — ${formatTime((acState.currentMission.endTime - now) / 1000)} remaining`
+      ? `On mission — ${formatTime((acState.currentMission.endTime - now) / 1000)}`
       : 'Ready';
 
+  const progressHtml = onMission ? (() => {
+    const m   = acState.currentMission;
+    const pct = Math.round(clamp((now - m.startTime) / (m.endTime - m.startTime), 0, 1) * 100);
+    return `<div class="mission-progress"><div class="mission-progress-fill" style="width:${pct}%"></div></div>`;
+  })() : '';
+
   const upgradesHtml = acDef.upgradeNames.map((name, i) => {
-    const tier = upgrades[i];
-    const maxed = tier >= 5;
-    const cost = !maxed ? acDef.upgradeCosts[i][tier] : 0;
+    const tier      = upgrades[i];
+    const maxed     = tier >= 5;
+    const cost      = !maxed ? acDef.upgradeCosts[i][tier] : 0;
     const canAfford = !maxed && st.credits >= cost;
     return `<div class="upgrade-row">
       <span class="upg-name">${name}</span>
       <div class="upg-pips">${[0,1,2,3,4].map(p => `<span class="pip ${p < tier ? 'filled' : ''}"></span>`).join('')}</div>
-      ${maxed ? '<span class="upg-maxed">MAX</span>' :
-        `<button class="btn-upg ${canAfford ? '' : 'cant-afford'}" data-upgrade="${acDef.id}:${i}" ${!unlocked || !canAfford ? 'disabled' : ''}>${formatCredits(cost)}</button>`}
+      ${maxed
+        ? '<span class="upg-maxed">MAX</span>'
+        : `<button class="btn-upg ${canAfford ? '' : 'cant-afford'}" data-upgrade="${acDef.id}:${i}" ${!unlocked || !canAfford ? 'disabled' : ''}>${formatCredits(cost)}</button>`}
     </div>`;
   }).join('');
 
   return `<div class="ac-card ${!unlocked ? 'locked' : ''}">
     <div class="ac-card-header">
-      <canvas class="ac-minicanvas" data-acid="${acDef.id}" width="56" height="56"></canvas>
+      <canvas class="ac-minicanvas" data-acid="${acDef.id}" width="72" height="72"></canvas>
       <div class="ac-info">
         <div class="ac-name">${acDef.name}</div>
         <div class="ac-role">${acDef.role}</div>
-        <div class="ac-status ${onMission ? 'on-mission' : unlocked ? 'ready' : 'locked-status'}">${statusText}</div>
+        <div class="ac-status ${onMission ? 'on-mission' : unlocked ? 'ready' : 'locked-status'}">
+          <span class="status-dot ${dotCls}"></span>${statusStr}
+        </div>
+        ${progressHtml}
       </div>
-      ${!unlocked ? `<button class="btn-unlock ${st.credits >= acDef.unlockCost ? '' : 'cant-afford'}" data-unlock="${acDef.id}" ${st.credits < acDef.unlockCost ? 'disabled' : ''}>Unlock<br>${formatCredits(acDef.unlockCost)}</button>` : ''}
+      ${!unlocked ? `<button class="btn-unlock ${st.credits >= acDef.unlockCost ? '' : 'cant-afford'}" data-unlock="${acDef.id}" ${st.credits < acDef.unlockCost ? 'disabled' : ''}>UNLOCK<br>${formatCredits(acDef.unlockCost)}</button>` : ''}
     </div>
     ${unlocked ? `<div class="ac-special">⭐ ${acDef.specialDesc}</div>` : ''}
     ${unlocked ? `<div class="ac-upgrades">${upgradesHtml}</div>` : ''}
@@ -283,10 +298,15 @@ function renderOpsPanel(st) {
 
   let activeInfo = '';
   if (onMission) {
-    const m = acState.currentMission;
+    const m       = acState.currentMission;
     const timeLeft = Math.max(0, (m.endTime - now) / 1000);
+    const pct     = Math.round(clamp((now - m.startTime) / (m.endTime - m.startTime), 0, 1) * 100);
     activeInfo = `<div class="active-mission-banner">
-      ✈ Active Mission — ${formatTime(timeLeft)} remaining — ${formatRate(m.passivePerSec)}
+      <div class="mission-banner-top">
+        <span class="mission-banner-text"><span class="status-dot on-mission"></span>✈ ${formatTime(timeLeft)} remaining</span>
+        <span class="mission-banner-rate">${formatRate(m.passivePerSec)}</span>
+      </div>
+      <div class="mission-progress"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
     </div>`;
   }
 
@@ -398,31 +418,37 @@ function closeCrateModal() {
 // Draw aircraft silhouettes into mini canvases in the Planes panel
 export function drawMiniCanvases() {
   document.querySelectorAll('.ac-minicanvas').forEach(mc => {
-    const id = mc.dataset.acid;
+    const id    = mc.dataset.acid;
     const acDef = getAircraftById(id);
     if (!acDef) return;
-    const dpr = window.devicePixelRatio || 1;
-    const size = mc.getBoundingClientRect().width || 56;
-    mc.width  = size * dpr;
-    mc.height = size * dpr;
-    const c = mc.getContext('2d');
-    c.scale(dpr, dpr);
+    const _dpr  = Math.min(window.devicePixelRatio || 1, 2.5);
+    const size  = mc.getBoundingClientRect().width || 72;
+    mc.width  = Math.round(size * _dpr);
+    mc.height = Math.round(size * _dpr);
+    const c   = mc.getContext('2d');
+    c.scale(_dpr, _dpr);
     c.clearRect(0, 0, size, size);
-    const scale = size * 0.44;
+    // Dark gradient background
+    const bg = c.createLinearGradient(0, 0, size, size);
+    bg.addColorStop(0, '#0a180a');
+    bg.addColorStop(1, '#0e200e');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, size, size);
+    const sc = size * 0.46;
     const cx = size / 2;
     const cy = size / 2;
+    c.shadowBlur  = 14;
+    c.shadowColor = acDef.color;
     for (const part of acDef.parts) {
       c.save();
       c.globalAlpha = part.alpha !== undefined ? part.alpha : 1;
       c.beginPath();
-      c.moveTo(cx + part.points[0][0] * scale, cy + part.points[0][1] * scale);
+      c.moveTo(cx + part.points[0][0] * sc, cy + part.points[0][1] * sc);
       for (let i = 1; i < part.points.length; i++) {
-        c.lineTo(cx + part.points[i][0] * scale, cy + part.points[i][1] * scale);
+        c.lineTo(cx + part.points[i][0] * sc, cy + part.points[i][1] * sc);
       }
       c.closePath();
       c.fillStyle = part.color;
-      c.shadowBlur = 8;
-      c.shadowColor = part.color;
       c.fill();
       c.restore();
     }

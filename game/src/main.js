@@ -74,7 +74,7 @@ function gameLoop(ts) {
 
   tick(dt, ts);
 
-  renderFrame(state, ts);
+  renderFrame(state, ts, dt);
 
   if (ts - lastUIUpdate > 250) {
     renderUI(state);
@@ -96,8 +96,9 @@ function tick(dt, ts) {
     const m = acState.currentMission;
 
     if (m.endTime <= now) {
+      const payout = m.payoutOnComplete;
       completeMission(ac.id);
-      triggerCompletionFlash(ac.id);
+      triggerCompletionFlash(ac.id, payout);
       handlePendingActions();
     } else {
       // Drip passive income
