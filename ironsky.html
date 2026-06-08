@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRONSKY — INFINITE COMMAND</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#00e87a;--g2:#009e52;--a:#f5a623;--r:#ff4757;--b:#1e90ff;--p:#a855f7;--c:#00d2ff;--bg:#090c10;--bg2:#0f1318;--bg3:#141921;--card:#161d28;--card2:#1c2535;--border:#ffffff12;--border2:#ffffff1e;--text:#dde3ee;--muted:#5a6478;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:500;overflow:hidden;height:100dvh;width:100vw;display:flex;flex-direction:column}
+#topbar{height:52px;min-height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:7px;z-index:20;flex-shrink:0;overflow-x:auto}
+#logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:14px;color:var(--g);letter-spacing:3px;text-shadow:0 0 12px #00e87a55;white-space:nowrap}
+.pill{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);border-radius:7px;padding:4px 8px;white-space:nowrap;flex-shrink:0}
+.pill .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.pill .v{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--a)}
+.pill .v.g{color:var(--g)}.pill .v.b{color:var(--b)}.pill .v.p{color:var(--p)}.pill .v.c{color:#00d2ff}
+#prestige-pill{background:linear-gradient(135deg,#1a0a2e,#0d1a2e);border-color:#a855f755;cursor:pointer}
+#save-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);margin-left:auto;flex-shrink:0;transition:all 0.3s}
+#save-dot.on{background:var(--g);box-shadow:0 0 6px var(--g)}
+#main{flex:1;overflow:hidden;position:relative}
+.view{position:absolute;inset:0;overflow-y:auto;display:none;padding:12px;padding-bottom:72px}
+.view.active{display:block}
+#view-scene{padding:0;overflow:hidden}
+#view-scene.active{display:flex;flex-direction:column}
+#bottomnav{height:56px;min-height:56px;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:20;flex-shrink:0}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:8.5px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;transition:color 0.15s;padding:4px 0;position:relative;min-width:0}
+.nb svg{width:15px;height:15px;stroke-width:1.8;stroke:currentColor;fill:none;transition:all 0.15s}
+.nb.active{color:var(--g)}.nb.active svg{filter:drop-shadow(0 0 3px var(--g))}
+.nb::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--g);border-radius:0 0 2px 2px;opacity:0;transition:opacity 0.15s}
+.nb.active::after{opacity:1}
+.nb .bdot{position:absolute;top:5px;right:calc(50% - 11px);width:6px;height:6px;border-radius:50%;background:var(--r);display:none}
+.nb .bdot.show{display:block}
+#scene-canvas{flex:1;display:block;width:100%}
+#scene-hud{position:absolute;top:8px;left:0;right:0;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;padding:0 8px;pointer-events:none}
+.s-chip{background:rgba(9,12,16,0.85);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--text);backdrop-filter:blur(6px)}
+.s-chip b{color:var(--g);font-family:'Orbitron',sans-serif;font-size:9px}
+.sh{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--muted);letter-spacing:3px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.sh span{font-size:10px;color:var(--a)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.card.hi{border-color:var(--border2)}
+.acg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+.acc.locked{opacity:0.38}
+.acc .cnt{position:absolute;top:7px;right:7px;font-family:'Orbitron',sans-serif;font-size:8px;background:#00e87a18;border:1px solid #00e87a33;border-radius:3px;padding:1px 4px;color:var(--g)}
+.aname{font-family:'Orbitron',sans-serif;font-size:8.5px;font-weight:700;color:var(--text);line-height:1.3}
+.arole{font-size:9.5px;color:var(--muted)}
+.astat{display:flex;justify-content:space-between;font-size:10px}.astat .k{color:var(--muted)}.astat .v{color:var(--g);font-weight:700}
+.aspec{font-size:9.5px;color:var(--muted);font-style:italic;line-height:1.4}
+.btn{border:none;border-radius:7px;padding:7px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:all 0.12s;width:100%;margin-top:7px}
+.bg{background:var(--g2);color:#000}.bg:hover:not(:disabled){background:var(--g);box-shadow:0 0 10px #00e87a44}
+.ba{background:#b07018;color:#000}.ba:hover:not(:disabled){background:var(--a);box-shadow:0 0 10px #f5a62344}
+.br{background:#cc2233;color:#fff}.br:hover:not(:disabled){background:var(--r);box-shadow:0 0 10px #ff475744}
+.bb{background:#1255a0;color:#fff}.bb:hover:not(:disabled){background:var(--b);box-shadow:0 0 10px #1e90ff44}
+.bp{background:#6b21a8;color:#fff}.bp:hover:not(:disabled){background:var(--p);box-shadow:0 0 10px #a855f744}
+.bc2{background:linear-gradient(135deg,#001a22,#001022);color:#00d2ff;border:1px solid #00d2ff33}.bc2:hover:not(:disabled){background:linear-gradient(135deg,#002a35,#001832);box-shadow:0 0 10px #00d2ff44}
+.bm{background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.bdg{font-family:'Orbitron',sans-serif;font-size:9px;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.bdg-g{background:#00e87a15;color:var(--g);border:1px solid #00e87a30}
+.bdg-a{background:#f5a62315;color:var(--a);border:1px solid #f5a62330}
+.bdg-b{background:#1e90ff15;color:var(--b);border:1px solid #1e90ff30}
+.bdg-r{background:#ff475715;color:var(--r);border:1px solid #ff475730}
+.bdg-p{background:#a855f715;color:var(--p);border:1px solid #a855f730}
+.bdg-m{background:#ffffff08;color:var(--muted);border:1px solid var(--border)}
+.bdg-c{background:#00d2ff15;color:#00d2ff;border:1px solid #00d2ff30}
+.pw{height:4px;background:#ffffff0a;border-radius:2px;margin-top:5px;overflow:hidden}
+.pf{height:100%;border-radius:2px;transition:width 0.2s}
+.pf.g{background:var(--g)}.pf.b{background:var(--b)}.pf.a{background:var(--a)}.pf.p{background:var(--p)}.pf.r{background:var(--r)}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
+.mc.run{border-color:#1e90ff33}.mc.auto{border-color:#00e87a22}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px}
+.mt{font-size:14px;font-weight:700;color:var(--text)}.ms{font-size:10px;color:var(--muted);margin-bottom:5px}
+.mf{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.uc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
+.uh{display:flex;gap:9px;align-items:flex-start;margin-bottom:7px}
+.ui{font-size:20px;flex-shrink:0}.un{font-size:14px;font-weight:700;color:var(--text)}.ud{font-size:10px;color:var(--muted);margin-top:2px}
+.ul{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--b);margin-top:2px}
+.dots{display:flex;gap:3px;margin-bottom:7px}
+.dot{height:3px;flex:1;border-radius:2px;background:var(--border)}.dot.on{background:var(--b)}
+.bc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
+.bc.built{border-color:#00e87a22}
+.bh{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.bi{font-size:24px}.bn{font-size:14px;font-weight:700;color:var(--text)}.bd{font-size:10px;color:var(--muted)}.be{font-size:11px;color:var(--g);margin-top:2px}
+.wcard{background:var(--card);border:1px solid #ff475722;border-radius:10px;padding:13px;margin-bottom:7px}
+.wname{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--r);margin-bottom:7px}
+.wstats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px}
+.wstat{font-size:11px;color:var(--muted)}.wstat span{color:var(--text);font-weight:600}
+.wres{background:var(--card2);border-radius:10px;padding:16px;text-align:center;margin-bottom:9px}
+.wrt{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:900;margin-bottom:5px}
+.wlog{background:#090c10;border-radius:8px;padding:9px;text-align:left;max-height:130px;overflow-y:auto;font-size:10px;color:var(--muted);line-height:1.9}
+.wl-w{color:var(--g)}.wl-l{color:var(--r)}
+/* theatre */
+.thcard{background:var(--card);border:1px solid #1e90ff22;border-radius:10px;padding:11px;margin-bottom:9px}
+.thcard.conquered{border-color:#00e87a44;background:linear-gradient(135deg,#0a1810,#0c1525)}
+.thname{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--b);letter-spacing:2px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.bgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:7px}
+.bbtn{border-radius:5px;padding:5px 2px;font-size:8px;font-family:'Orbitron',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;border:1px solid var(--border)}
+.bbtn.won{background:#00e87a18;border-color:#00e87a44;color:var(--g)}
+.bbtn.avail{background:#1e90ff18;border-color:#1e90ff44;color:var(--b);cursor:pointer}
+.bbtn.locked{background:var(--card2);color:var(--muted);cursor:not-allowed;opacity:0.4}
+/* action */
+.actcard{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:13px;margin-bottom:9px}
+.actcard.cooling{border-color:#1e90ff33}
+.actitle{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--c);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.acdesc{font-size:10px;color:var(--muted);margin-bottom:7px;line-height:1.5}
+.acinfo{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;font-size:10px}
+.acinfo span{color:var(--muted)}.acinfo b{color:var(--text)}
+/* mini-game modal */
+.mgmodal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.94);display:flex;align-items:center;justify-content:center;padding:12px}
+.mgbox{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:14px;max-width:350px;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;max-height:90vh;overflow-y:auto}
+.mgtitle{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--c);letter-spacing:2px}
+.mgsub{font-size:10px;color:var(--muted);text-align:center}
+.mghud{display:flex;gap:14px;font-size:11px;font-weight:600}
+.mghud span{color:var(--muted)}.mghud b{color:var(--a)}
+#mg-canvas{border:1px solid var(--border2);border-radius:8px;display:block;touch-action:none;cursor:crosshair;max-width:100%}
+/* commander */
+.cmdcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
+.cmdcard.hired{border-color:#00e87a22}
+.cmdhd{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.cmdico{font-size:26px;flex-shrink:0}.cmdnm{font-size:14px;font-weight:700;color:var(--text)}.cmddesc{font-size:10px;color:var(--muted)}.cmdbns{font-size:11px;color:var(--g);margin-top:2px}
+/* prestige */
+.pmodal{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:12px;backdrop-filter:blur(6px);overflow-y:auto}
+.pmbox{background:linear-gradient(135deg,#0d0820,#091828);border:1px solid #a855f744;border-radius:14px;padding:18px;max-width:360px;width:100%;text-align:center;margin:auto}
+.ptier{background:#ffffff08;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;text-align:left}
+.ptier.avail{border-color:#a855f755}
+.omrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.omrow:last-of-type{border:none}.omrow .k{color:var(--muted)}.omrow .v{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--a);font-weight:700}
+/* offline modal */
+.omodal{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.ombox{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:22px;max-width:320px;width:100%}
+/* event banner */
+#evtbanner{position:fixed;top:54px;left:0;right:0;z-index:45;padding:6px 12px;display:none;pointer-events:none}
+.evtcard{background:linear-gradient(135deg,#1a0f04,#0d1228);border:1px solid #f5a62355;border-radius:9px;padding:10px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px;pointer-events:all;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.evttext{font-size:12px;color:var(--a);font-weight:700;flex:1;line-height:1.4}
+/* toast */
+#toast{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;max-width:92vw}
+.tmsg{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 13px;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;animation:ta 3s forwards}
+@keyframes ta{0%{opacity:0;transform:translateY(6px)}10%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div id="logo">IRONSKY</div>
+  <div class="pill"><span class="l">Credits</span><span class="v" id="hc">$500</span></div>
+  <div class="pill"><span class="l">$/s</span><span class="v g" id="hi">$0</span></div>
+  <div class="pill"><span class="l">Fleet</span><span class="v b" id="hf">0</span></div>
+  <div class="pill" id="prestige-pill" onclick="showPrestige()"><span class="l">Stars</span><span class="v p" id="hp">★0</span></div>
+  <div class="pill" id="medal-pill" style="display:none"><span class="l">Medals</span><span class="v c" id="hm">🎖0</span></div>
+  <div id="save-dot" title="Autosave"></div>
+</div>
+<div id="main">
+  <div class="view active" id="view-scene"><canvas id="scene-canvas"></canvas><div id="scene-hud"></div></div>
+  <div class="view" id="view-fleet"></div>
+  <div class="view" id="view-missions"></div>
+  <div class="view" id="view-upgrades"></div>
+  <div class="view" id="view-base"></div>
+  <div class="view" id="view-war"></div>
+  <div class="view" id="view-action"></div>
+</div>
+<nav id="bottomnav">
+  <button class="nb active" data-v="scene"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Base</button>
+  <button class="nb" data-v="fleet"><svg viewBox="0 0 24 24"><path d="M22 16.5L12 2 2 16.5h5l1-3h8l1 3h5z"/></svg>Fleet<div class="bdot" id="dot-fleet"></div></button>
+  <button class="nb" data-v="missions"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Ops<div class="bdot" id="dot-missions"></div></button>
+  <button class="nb" data-v="upgrades"><svg viewBox="0 0 24 24"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>Tech</button>
+  <button class="nb" data-v="base"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Build<div class="bdot" id="dot-base"></div></button>
+  <button class="nb" data-v="war"><svg viewBox="0 0 24 24"><path d="M12 2l3.5 6.5L22 10l-5 5 1.2 7L12 19l-6.2 3L7 15 2 10l6.5-1.5z"/></svg>War</button>
+  <button class="nb" data-v="action"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Act</button>
+</nav>
+<div id="toast"></div>
+<div id="evtbanner"><div class="evtcard" id="evtcard"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+// ═══ AIRCRAFT DEFINITIONS (exponential pricing) ═══
+const ACD=[
+  {id:'f16',  name:'F-16C FIGHTING FALCON',role:'Multirole Fighter',      col:'#1e90ff',cost:500,     cg:1.15,ips:3,   ug:1.5,unlockF:0,  spec:'Block 50/52 — GE F110-GE-129, Mach 2.0, 9g limit.',mids:['patrol','intercept','sead']},
+  {id:'a10',  name:'A-10C THUNDERBOLT II', role:'Close Air Support',      col:'#22c55e',cost:3000,    cg:1.18,ips:12,  ug:1.5,unlockF:4,  spec:'GAU-8/A 30mm Avenger. Titanium bathtub cockpit.',mids:['tank_bust','convoy','cas']},
+  {id:'b2',   name:'B-2A SPIRIT',          role:'Stealth Bomber',         col:'#a855f7',cost:15000,   cg:1.20,ips:45,  ug:1.5,unlockF:8,  spec:'RCS 0.001m². 80× Mk.82 or 16× B83 nuclear bombs.',mids:['deep_strike','bunker','nuke_run']},
+  {id:'ac130',name:'AC-130U SPOOKY II',    role:'Gunship/Fire Support',   col:'#f5a623',cost:55000,   cg:1.22,ips:120, ug:1.5,unlockF:13, spec:'105mm M102 Howitzer, 40mm Bofors, 25mm GAU-12.',mids:['fire_support','siege','overwatch']},
+  {id:'mq9',  name:'MQ-9B REAPER',         role:'MALE Unmanned Combat',   col:'#84cc16',cost:80000,   cg:1.22,ips:95,  ug:1.5,unlockF:11, spec:'14× AGM-114 Hellfire, 27hr endurance, 50,000ft.',mids:['drone_strike','hvi_elim','isr_sweep']},
+  {id:'u2',   name:'U-2S DRAGON LADY',     role:'High-Alt Reconnaissance',col:'#6b7280',cost:150000,  cg:1.24,ips:130, ug:1.5,unlockF:14, spec:'70,000ft+ altitude. SIGINT, ELINT sensors. Still active.',mids:['elint_run','photo_recon','sigint_sweep']},
+  {id:'sr71', name:'SR-71A BLACKBIRD',     role:'Strategic Reconnaissance',col:'#ef4444',cost:400000,  cg:1.26,ips:300, ug:1.5,unlockF:19, spec:'Mach 3.3+, 85,000ft. Never shot down in service.',mids:['deep_recon','sat_kill','bda']},
+  {id:'e3',   name:'E-3G SENTRY (AWACS)',  role:'Airborne Early Warning', col:'#00d2ff',cost:600000,  cg:1.26,ips:260, ug:1.5,unlockF:16, spec:'AN/APY-2 radar — 375km detection range. C2 node.',mids:['awacs_orbit','jstars','battlespace']},
+  {id:'b52',  name:'B-52H STRATOFORTRESS',role:'Long-Range Heavy Bomber', col:'#78716c',cost:1500000, cg:1.28,ips:500, ug:1.5,unlockF:22, spec:'70,000lb payload. ALCM/JASSM. Service to 2050+.',mids:['carpet_bomb','standoff','arc_light']},
+  {id:'f35',  name:'F-35A LIGHTNING II',   role:'5th-Gen Strike Fighter', col:'#38bdf8',cost:5000000, cg:1.30,ips:1200,ug:1.5,unlockF:30, spec:'DAS 360° sensor fusion. AN/APG-81 AESA. Stealth.',mids:['package_lead','sead_dead','strike_coord']},
+  {id:'f22',  name:'F-22A RAPTOR',         role:'Air Dominance Fighter',  col:'#00d2ff',cost:15000000,cg:1.32,ips:2500,ug:1.5,unlockF:26, spec:'Supercruise Mach 1.82. VLO stealth. 6× AIM-120D.',mids:['ghost','silent_hunt','df_sweep']},
+  {id:'b21',  name:'B-21 RAIDER',          role:'Next-Gen Strategic Bomber',col:'#c084fc',cost:50000000,cg:1.38,ips:8000,ug:1.5,unlockF:40,spec:'Classified RCS. Open architecture. Nuclear capable.',mids:['black_op','deep_penetration','nuclear_det']},
+];
+// ═══ MISSIONS ═══
+const MID=[
+  {id:'patrol',name:'OP NORTHERN WATCH',ac:'f16',dur:12,base:80,desc:'CAP over disputed airspace.'},
+  {id:'intercept',name:'OP BOLD EAGLE',ac:'f16',dur:18,base:150,desc:'Scramble — hostile fast-mover.'},
+  {id:'sead',name:'OP IRON HAND',ac:'f16',dur:22,base:220,desc:'AGM-88 HARM on SAM network.'},
+  {id:'tank_bust',name:'OP DESERT HAMMER',ac:'a10',dur:16,base:320,desc:'GAU-8 on armoured column.'},
+  {id:'convoy',name:'OP CHOKEPOINT',ac:'a10',dur:14,base:240,desc:'Strike on resupply convoy.'},
+  {id:'cas',name:'OP CLOSE THUNDER',ac:'a10',dur:20,base:380,desc:'Troops in contact — CAS.'},
+  {id:'deep_strike',name:'OP PHANTOM REACH',ac:'b2',dur:30,base:1400,desc:'B-2 penetrates IADS.'},
+  {id:'bunker',name:'OP GRAND SLAM',ac:'b2',dur:25,base:1100,desc:'GBU-57 MOP — hardened facility.'},
+  {id:'nuke_run',name:'OP CHROME DOME',ac:'b2',dur:40,base:2200,desc:'Nuclear deterrence patrol.'},
+  {id:'fire_support',name:'OP SPIRIT THUNDER',ac:'ac130',dur:22,base:2500,desc:'105mm fire support.'},
+  {id:'siege',name:'OP SPECTRE SIEGE',ac:'ac130',dur:35,base:3800,desc:'105mm fortified position.'},
+  {id:'overwatch',name:'OP WATCHMAN',ac:'ac130',dur:28,base:3100,desc:'SOF overwatch — 12hrs.'},
+  {id:'deep_recon',name:'OP BLACK SHIELD',ac:'sr71',dur:25,base:6000,desc:'Mach 3+ overfly.'},
+  {id:'sat_kill',name:'OP STARFIRE',ac:'sr71',dur:32,base:8500,desc:'ASAT decoy pass.'},
+  {id:'bda',name:'OP GIANT REACH',ac:'sr71',dur:20,base:5000,desc:'Post-strike BDA.'},
+  {id:'awacs_orbit',name:'OP LOOKOUT GLASS',ac:'e3',dur:18,base:4200,desc:'AWACS orbit.'},
+  {id:'jstars',name:'OP NIGHT SENTINEL',ac:'e3',dur:24,base:5500,desc:'J-STARS MTI 500+ contacts.'},
+  {id:'battlespace',name:'OP STRIKE EAGLE EYE',ac:'e3',dur:30,base:7000,desc:'Full C2 node.'},
+  {id:'drone_strike',name:'OP PREDAWN HUNTER',ac:'mq9',dur:15,base:1800,desc:'AGM-114 HVI strike.'},
+  {id:'hvi_elim',name:'OP HAYMAKER',ac:'mq9',dur:20,base:2600,desc:'Hellfire R9X kinetic.'},
+  {id:'isr_sweep',name:'OP CONSTANT HAWK',ac:'mq9',dur:25,base:2000,desc:'27-hour ISR orbit.'},
+  {id:'ghost',name:'OP SILENT EAGLE',ac:'f22',dur:40,base:18000,desc:'F-22 deep penetration.'},
+  {id:'silent_hunt',name:'OP RAPTOR DAWN',ac:'f22',dur:50,base:25000,desc:'BVR supercruise sweep.'},
+  {id:'df_sweep',name:'OP IRON RAPTOR',ac:'f22',dur:35,base:14000,desc:'Escort strike package.'},
+  {id:'carpet_bomb',name:'OP ARC LIGHT',ac:'b52',dur:28,base:9000,desc:'108× Mk.82 carpet bomb.'},
+  {id:'standoff',name:'OP CALCM RAIN',ac:'b52',dur:22,base:7500,desc:'20× JASSM-ER standoff.'},
+  {id:'arc_light',name:'OP LINEBACKER',ac:'b52',dur:35,base:12000,desc:'Full EW + bomb train.'},
+  {id:'package_lead',name:'OP LIGHTNING STORM',ac:'f35',dur:30,base:11000,desc:'F-35 leading 12-ship.'},
+  {id:'sead_dead',name:'OP VIPER STING',ac:'f35',dur:25,base:9000,desc:'SEAD/DEAD combined.'},
+  {id:'strike_coord',name:'OP HAMMER ANVIL',ac:'f35',dur:38,base:15000,desc:'Sensor fusion C2.'},
+  {id:'black_op',name:'OP DARK STORM',ac:'b21',dur:60,base:55000,desc:'B-21 deep penetration.'},
+  {id:'deep_penetration',name:'OP RAIDER DAWN',ac:'b21',dur:75,base:80000,desc:'High-threat nuclear profile.'},
+  {id:'nuclear_det',name:'OP BROKEN ARROW',ac:'b21',dur:90,base:120000,desc:'Strategic deterrence patrol.'},
+  {id:'elint_run',name:'OP SENIOR SPAN',ac:'u2',dur:20,base:3200,desc:'SIGINT/ELINT at 70,000ft.'},
+  {id:'photo_recon',name:'OP SENIOR YEAR',ac:'u2',dur:28,base:4500,desc:'Optical reconnaissance.'},
+  {id:'sigint_sweep',name:'OP OLYMPIC TORCH',ac:'u2',dur:35,base:6000,desc:'SIGINT over denied territory.'},
+];
+// ═══ UPGRADES ═══
+const UPG=[
+  {id:'auto_f16',name:'F-16 Auto-Dispatch',icon:'⚡',desc:'Auto-launches F-16 missions',maxL:10,base:400,grow:2.2,ac:'f16',mids:['patrol','intercept','sead'],effect:'auto'},
+  {id:'auto_a10',name:'A-10 Auto-Dispatch',icon:'⚡',desc:'Auto-queues A-10 strikes',maxL:10,base:1500,grow:2.2,ac:'a10',mids:['tank_bust','convoy','cas'],effect:'auto'},
+  {id:'auto_b2',name:'B-2 Auto-Dispatch',icon:'⚡',desc:'Auto-launches bomber runs',maxL:10,base:6000,grow:2.2,ac:'b2',mids:['deep_strike','bunker'],effect:'auto'},
+  {id:'auto_ac130',name:'AC-130 Auto-Dispatch',icon:'⚡',desc:'Auto-deploys gunship',maxL:10,base:10000,grow:2.2,ac:'ac130',mids:['fire_support','overwatch'],effect:'auto'},
+  {id:'auto_mq9',name:'MQ-9 Auto-Dispatch',icon:'⚡',desc:'Auto-launches drone ops',maxL:10,base:8000,grow:2.2,ac:'mq9',mids:['drone_strike','isr_sweep'],effect:'auto'},
+  {id:'auto_sr71',name:'SR-71 Auto-Dispatch',icon:'⚡',desc:'Auto-launches recon runs',maxL:10,base:22000,grow:2.2,ac:'sr71',mids:['deep_recon','bda'],effect:'auto'},
+  {id:'auto_e3',name:'E-3 Auto-Dispatch',icon:'⚡',desc:'Auto-deploys AWACS orbit',maxL:10,base:15000,grow:2.2,ac:'e3',mids:['awacs_orbit','battlespace'],effect:'auto'},
+  {id:'auto_f22',name:'F-22 Auto-Dispatch',icon:'⚡',desc:'Auto-launches raptor ops',maxL:10,base:45000,grow:2.2,ac:'f22',mids:['ghost','df_sweep'],effect:'auto'},
+  {id:'auto_b52',name:'B-52 Auto-Dispatch',icon:'⚡',desc:'Auto-launches BUFF missions',maxL:10,base:20000,grow:2.2,ac:'b52',mids:['carpet_bomb','standoff'],effect:'auto'},
+  {id:'auto_f35',name:'F-35 Auto-Dispatch',icon:'⚡',desc:'Auto-deploys Lightning II',maxL:10,base:35000,grow:2.2,ac:'f35',mids:['package_lead','sead_dead'],effect:'auto'},
+  {id:'auto_b21',name:'B-21 Auto-Dispatch',icon:'⚡',desc:'Auto-launches Raider ops',maxL:10,base:100000,grow:2.2,ac:'b21',mids:['black_op','deep_penetration'],effect:'auto'},
+  {id:'auto_u2',name:'U-2 Auto-Dispatch',icon:'⚡',desc:'Auto-deploys Dragon Lady',maxL:10,base:11000,grow:2.2,ac:'u2',mids:['elint_run','photo_recon'],effect:'auto'},
+  {id:'income1',name:'Procurement Budget',icon:'💰',desc:'+20% passive income/level',maxL:999,base:800,grow:2.5,effect:'income',mult:0.20},
+  {id:'speed1',name:'Mission Efficiency',icon:'⏱️',desc:'-10% mission time/level',maxL:30,base:600,grow:2.4,effect:'speed',mult:0.10},
+  {id:'reward1',name:'Operational Bonus',icon:'🎖️',desc:'+15% mission rewards/level',maxL:999,base:700,grow:2.4,effect:'reward',mult:0.15},
+  {id:'war1',name:'Combat Systems',icon:'⚔️',desc:'+15% war power/level',maxL:999,base:1500,grow:2.5,effect:'war',mult:0.15},
+  {id:'multi_buy',name:'Fleet Procurement',icon:'📦',desc:'Buy 10 aircraft at once (toggle)',maxL:1,base:5000,grow:1,effect:'multibuy'},
+];
+function upgCost(u,lvl){return Math.floor(u.base*Math.pow(u.grow,lvl));}
+// ═══ BUILDINGS ═══
+const BLDG=[
+  {id:'apron',name:'Aircraft Apron',icon:'🛣️',desc:'Hardstand parking for all aircraft',effect:'+20% fleet income',cost:2000,req:null,effectKey:'income',val:0.20},
+  {id:'tower',name:'Control Tower',icon:'📡',desc:'AN/TPN-25 GCA radar. Precision approaches.',effect:'+15% mission rewards',cost:4000,req:'apron',effectKey:'reward',val:0.15},
+  {id:'hangar3',name:'Type III Hangar',icon:'🏗️',desc:'Steel arch — 6 aircraft, full maintenance',effect:'+25% fleet income',cost:8000,req:'apron',effectKey:'income',val:0.25},
+  {id:'fuel',name:'JP-8 Fuel Farm',icon:'⛽',desc:'500,000 gal JP-8. Reduces turnaround.',effect:'-20% mission duration',cost:12000,req:'hangar3',effectKey:'speed',val:0.20},
+  {id:'radar',name:'AN/FPS-117 RADAR',icon:'📶',desc:'Long-range 3D search radar. 450km range.',effect:'War intel +20% power',cost:18000,req:'tower',effectKey:'war',val:0.20},
+  {id:'ops',name:'Wing Operations Ctr',icon:'🏢',desc:'24/7 ops. Automated scheduling.',effect:'Auto-dispatch -25%',cost:25000,req:'radar',effectKey:'speed',val:0.25},
+  {id:'ammo',name:'Munitions Storage',icon:'💥',desc:'Collocated Munitions Storage',effect:'+30% war attack power',cost:35000,req:'ops',effectKey:'war',val:0.30},
+  {id:'runway2',name:'Secondary Runway',icon:'🛤️',desc:'Parallel runway — concurrent ops',effect:'+2 mission slots',cost:50000,req:'fuel',effectKey:'slots',val:2},
+  {id:'e2',name:'Forward HQ',icon:'🏛️',desc:'CAOC forward. Theatre-level C2.',effect:'+50% all income',cost:80000,req:'runway2',effectKey:'income',val:0.50},
+  {id:'nuke',name:'Nuclear Storage WS3',icon:'☢️',desc:'Classified nuclear storage.',effect:'+100% war power',cost:150000,req:'ammo',effectKey:'war',val:1.00},
+  {id:'satcom',name:'SATCOM Terminal',icon:'🛰️',desc:'MILSTAR/AEHF. Worldwide C2.',effect:'+60% mission rewards',cost:120000,req:'e2',effectKey:'reward',val:0.60},
+  {id:'superbase',name:'Super FOB',icon:'🌐',desc:'Full spectrum. Self-sustaining.',effect:'+100% all income & speed',cost:500000,req:'satcom',effectKey:'all',val:1.00},
+];
+// ═══ COMMANDERS ═══
+const COMMANDERS=[
+  {id:'steel',  name:'Gen. Steel',   icon:'🦅',desc:'Iron discipline, max fleet output',  bonus:'+20% fleet income/lvl',   cost:1,maxL:5, effectKey:'income',  val:0.20},
+  {id:'rivers', name:'Adm. Rivers',  icon:'⚓',desc:'Navy liaison, mission expertise',     bonus:'+15% mission rewards/lvl', cost:1,maxL:5, effectKey:'reward',  val:0.15},
+  {id:'hunter', name:'Col. Hunter',  icon:'🎯',desc:'Precision timing, sortie rates',      bonus:'-12% mission time/lvl',    cost:2,maxL:5, effectKey:'speed',   val:0.12},
+  {id:'storm',  name:'Maj. Storm',   icon:'⚡',desc:'Combat specialist, offensive ops',    bonus:'+25% war power/lvl',       cost:2,maxL:5, effectKey:'war',     val:0.25},
+  {id:'fox',    name:'Cmdr. Fox',    icon:'🦊',desc:'Supply chain, offline logistics',     bonus:'+12% offline income/lvl',  cost:1,maxL:10,effectKey:'offline', val:0.12},
+  {id:'eagle',  name:'Lt.Col. Eagle',icon:'🦁',desc:'Top gun, elite pilot corps',          bonus:'+30% F-22 & F-35 IPS/lvl', cost:3,maxL:5, effectKey:'elite',   val:0.30},
+  {id:'shield', name:'Brig. Shield', icon:'🛡️',desc:'Base commander, infrastructure',      bonus:'+25% base income/lvl',     cost:2,maxL:5, effectKey:'base',    val:0.25},
+  {id:'hawk',   name:'Adm. Hawk',    icon:'🦅',desc:'War profiteer, conquest rewards',     bonus:'+40% war rewards/lvl',     cost:3,maxL:5, effectKey:'wRew',    val:0.40},
+  {id:'phantom',name:'Gen. Phantom', icon:'👻',desc:'Stealth specialist, bomber costs',    bonus:'-18% B-2 & B-21 cost/lvl', cost:3,maxL:5, effectKey:'sthCost', val:0.18},
+  {id:'raptor', name:'Col. Raptor',  icon:'🦅',desc:'5th-gen specialist, advanced a/c',   bonus:'+50% F-22/F-35 IPS/lvl',   cost:4,maxL:3, effectKey:'genFive', val:0.50},
+];
+// ═══ THEATRES ═══
+const THEATRES=[
+  {id:'desert',name:'DESERT STORM',icon:'🏜️',reqTheatre:null,bonus:'+15% all income (perm)',bonusKey:'income',bonusVal:0.15,
+   battles:[
+    {name:'Al-Taji Skirmish',    pm:0.3, base:5000,    desc:'Light enemy forces.'},
+    {name:'Kirkuk Depot Strike', pm:0.5, base:12000,   desc:'Armed supply depot.'},
+    {name:'Siege of Mosul',      pm:0.8, base:28000,   desc:'Fortified city defense.'},
+    {name:'Baghdad Storm',       pm:1.2, base:65000,   desc:'Heavy AA + armor.'},
+    {name:'Desert Shield Final', pm:1.8, base:150000,  desc:'Elite Republican Guard.'},
+   ]},
+  {id:'pacific',name:'PACIFIC THUNDER',icon:'🌊',reqTheatre:'desert',bonus:'+25% war power & rewards',bonusKey:'war',bonusVal:0.25,
+   battles:[
+    {name:'Wake Island Skirmish', pm:2.0, base:400000,   desc:'Island garrison assault.'},
+    {name:'Midway Strike Package',pm:3.0, base:900000,   desc:'Naval air superiority.'},
+    {name:'Guadalcanal Assault',  pm:4.5, base:2000000,  desc:'Jungle fortress complex.'},
+    {name:'Tokyo Express Intercept',pm:6.0,base:5000000, desc:'Fast destroyer squadron.'},
+    {name:'Pacific Supremacy',    pm:8.0, base:12000000, desc:'Combined fleet engagement.'},
+   ]},
+  {id:'arctic',name:'ARCTIC WOLF',icon:'❄️',reqTheatre:'pacific',bonus:'+50% ALL income (perm)',bonusKey:'all',bonusVal:0.50,
+   battles:[
+    {name:'Reykjavik Intercept',   pm:10,  base:50000000,  desc:'Arctic air patrol.'},
+    {name:'Svalbard Raid',         pm:15,  base:120000000, desc:'Polar fortress assault.'},
+    {name:'Murmansk Strike',       pm:22,  base:300000000, desc:'Northern fleet base.'},
+    {name:'Northern Fleet Assault',pm:32,  base:800000000, desc:'Submarine pens + air.'},
+    {name:'Arctic Supremacy',      pm:45,  base:2000000000,desc:'Final stronghold.'},
+   ]},
+];
+// ═══ ACHIEVEMENTS ═══
+const ACHIEVEMENTS=[
+  {id:'a1', name:'First Flight',       icon:'✈️', desc:'Buy first aircraft',        check:()=>fleet()>=1},
+  {id:'a2', name:'Squadron Leader',    icon:'🛩️', desc:'Own 10 aircraft',           check:()=>fleet()>=10},
+  {id:'a3', name:'Wing Commander',     icon:'🚀', desc:'Own 50 aircraft',           check:()=>fleet()>=50},
+  {id:'a4', name:'Fleet Admiral',      icon:'⭐', desc:'Own 200 aircraft',          check:()=>fleet()>=200},
+  {id:'a5', name:'First Strike',       icon:'🎯', desc:'Complete 1 mission',        check:()=>S.missionsComplete>=1},
+  {id:'a6', name:'Combat Veteran',     icon:'🏅', desc:'Complete 100 missions',     check:()=>S.missionsComplete>=100},
+  {id:'a7', name:'Ops Director',       icon:'🎖️', desc:'Complete 1000 missions',    check:()=>S.missionsComplete>=1000},
+  {id:'a8', name:'First Blood',        icon:'⚔️', desc:'Win first war',             check:()=>S.warsWon>=1},
+  {id:'a9', name:'War Hero',           icon:'🏆', desc:'Win 50 wars',              check:()=>S.warsWon>=50},
+  {id:'a10',name:'Supreme Commander',  icon:'💎', desc:'Win 500 wars',             check:()=>S.warsWon>=500},
+  {id:'a11',name:'Reborn',             icon:'★',  desc:'First prestige star',       check:()=>S.prestigeStars>=1},
+  {id:'a12',name:'Eternal Flame',      icon:'🌟', desc:'10 prestige stars',         check:()=>S.prestigeStars>=10},
+  {id:'a13',name:'Medal of Honor',     icon:'🎖️', desc:'First medal',              check:()=>S.medals>=1},
+  {id:'a14',name:'Ribbon Order',       icon:'🎗️', desc:'First ribbon',             check:()=>S.ribbons>=1},
+  {id:'a15',name:'Millionaire',        icon:'💵', desc:'Earn $1M total',           check:()=>S.totalEarned>=1e6},
+  {id:'a16',name:'Billionaire',        icon:'💰', desc:'Earn $1B total',           check:()=>S.totalEarned>=1e9},
+  {id:'a17',name:'Trillionaire',       icon:'🤑', desc:'Earn $1T total',           check:()=>S.totalEarned>=1e12},
+  {id:'a18',name:'Commander',          icon:'👨‍✈️',desc:'Hire a commander',          check:()=>Object.values(S.cmdLvl||{}).some(v=>v>0)},
+  {id:'a19',name:'Desert Fox',         icon:'🏜️', desc:'Conquer Desert Storm',      check:()=>(S.theatreWins.desert||0)>=5},
+  {id:'a20',name:'Global Dominance',   icon:'🌍', desc:'Conquer all theatres',      check:()=>THEATRES.every(t=>(S.theatreWins[t.id]||0)>=5)},
+];
+// ═══ WAR ENEMIES ═══
+const ENEMY_NAMES=['FOXTROT BASE ALPHA','SIERRA OUTPOST BRAVO','DELTA FORTRESS GAMMA','KILO BASTION DELTA','OSCAR STRONGHOLD ECHO','PAPA CITADEL FOXTROT','ROMEO REDOUBT GOLF','TANGO RAMPART HOTEL'];
+const ENEMY_TIERS=[
+  {diff:'Skirmish',col:'#22c55e',pm:0.40,rm:0.6},
+  {diff:'Contested',col:'#84cc16',pm:0.65,rm:0.9},
+  {diff:'Hardened',col:'#f5a623',pm:0.90,rm:1.3},
+  {diff:'Fortified',col:'#ef4444',pm:1.20,rm:1.8},
+  {diff:'Supremacy',col:'#a855f7',pm:1.60,rm:2.6},
+];
+// ═══ GAME STATE ═══
+function defState(){
+  const owned={},ms={},ul={},bl={},cl={},tw={desert:0,pacific:0,arctic:0};
+  ACD.forEach(a=>owned[a.id]=0);
+  MID.forEach(m=>ms[m.id]={active:false,endTime:0,progress:0});
+  UPG.forEach(u=>ul[u.id]=0);
+  BLDG.forEach(b=>bl[b.id]=false);
+  COMMANDERS.forEach(c=>cl[c.id]=0);
+  return{credits:500,owned,missions:ms,upgLvl:ul,buildings:bl,cmdLvl:cl,
+    theatreWins:tw,achievements:{},actionCD:{},actionBest:{},
+    missionsComplete:0,warsWon:0,warsFought:0,totalEarned:0,
+    prestigeStars:0,prestigeMult:1,medals:0,ribbons:0,
+    eventActive:null,savedAt:Date.now()};
+}
+let S=defState();
+try{const r=localStorage.getItem('ironsky_v4');if(r){const d=JSON.parse(r);S=Object.assign(defState(),d);if(!S.theatreWins)S.theatreWins={desert:0,pacific:0,arctic:0};if(!S.cmdLvl)S.cmdLvl={};if(!S.achievements)S.achievements={};if(!S.actionCD)S.actionCD={};if(!S.actionBest)S.actionBest={};}}catch(e){}
+// ═══ CALCULATIONS ═══
+function calcMods(){
+  let income=1,speed=1,reward=1,war=1,slots=1;
+  BLDG.forEach(b=>{
+    if(!S.buildings[b.id])return;
+    if(b.effectKey==='income')income*=(1+b.val);
+    if(b.effectKey==='speed')speed*=(1-b.val);
+    if(b.effectKey==='reward')reward*=(1+b.val);
+    if(b.effectKey==='war')war*=(1+b.val);
+    if(b.effectKey==='slots')slots+=b.val;
+    if(b.effectKey==='all'){income*=(1+b.val);speed*=(1-b.val);}
+  });
+  const il=S.upgLvl['income1']||0;income*=(1+il*0.20);
+  const sl=S.upgLvl['speed1']||0;speed*=Math.max(0.05,1-sl*0.10);
+  const rl=S.upgLvl['reward1']||0;reward*=(1+rl*0.15);
+  const wl=S.upgLvl['war1']||0;war*=(1+wl*0.15);
+  // commander bonuses
+  COMMANDERS.forEach(c=>{
+    const lvl=S.cmdLvl[c.id]||0;if(!lvl)return;
+    if(c.effectKey==='income')income*=(1+c.val*lvl);
+    if(c.effectKey==='speed')speed*=Math.max(0.05,1-c.val*lvl);
+    if(c.effectKey==='reward')reward*=(1+c.val*lvl);
+    if(c.effectKey==='war')war*=(1+c.val*lvl);
+    if(c.effectKey==='wRew')war*=(1+c.val*lvl);
+  });
+  // theatre bonuses
+  if((S.theatreWins.desert||0)>=5)income*=1.15;
+  if((S.theatreWins.pacific||0)>=5){income*=1.15;war*=1.25;}
+  if((S.theatreWins.arctic||0)>=5){income*=1.50;reward*=1.50;}
+  // event bonus
+  if(S.eventActive&&S.eventActive.endTime>Date.now()){
+    if(S.eventActive.type==='fuel')income*=2;
+    if(S.eventActive.type==='intel')reward*=5;
+    if(S.eventActive.type==='war')war*=2;
+  }
+  // prestige multipliers
+  income*=S.prestigeMult;reward*=S.prestigeMult;
+  // medals: +2× per medal
+  const mm=1+(S.medals||0)*2;income*=mm;reward*=mm;
+  // ribbons: +5× per ribbon
+  const rm2=1+(S.ribbons||0)*5;income*=rm2;reward*=rm2;
+  return{income,speed,reward,war,slots};
+}
+function eliteBonus(){
+  const lvl=(S.cmdLvl['eagle']||0)+(S.cmdLvl['raptor']||0);
+  return 1+lvl*0.30;
+}
+function stealthDiscount(){
+  const lvl=S.cmdLvl['phantom']||0;
+  return Math.max(0.05,1-lvl*0.18);
+}
+function baseIPS(){
+  return ACD.reduce((s,a)=>{
+    const cnt=S.owned[a.id]||0;if(!cnt)return s;
+    let localIPS=a.ips*cnt;
+    if((a.id==='f22'||a.id==='f35')&&(S.cmdLvl['eagle']||S.cmdLvl['raptor']))localIPS*=eliteBonus();
+    return s+localIPS;
+  },0);
+}
+function ips(){return baseIPS()*calcMods().income;}
+function fleet(){return Object.values(S.owned).reduce((a,b)=>a+b,0);}
+function warPower(){return Math.floor(baseIPS()*12*calcMods().income*calcMods().war);}
+
+// ═══════════════════════════════════════
+// 3-D SCENE (Three.js)
+// ═══════════════════════════════════════
+const cvs=document.getElementById('scene-canvas');
+const R=new THREE.WebGLRenderer({canvas:cvs,antialias:true});
+R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.1;
+const SC=new THREE.Scene();
+SC.background=new THREE.Color(0x87CEEB);
+SC.fog=new THREE.Fog(0xc8e8f0,200,600);
+var CAM_TARGET=new THREE.Vector3(0,0,0);
+var CAM_DIST=120;var CAM_THETA=Math.PI*0.22;var CAM_PHI=Math.PI*0.75;
+const CAM=new THREE.PerspectiveCamera(45,2,0.5,1200);
+function updateCamera(){
+  var x=CAM_TARGET.x+CAM_DIST*Math.sin(CAM_THETA)*Math.sin(CAM_PHI);
+  var y=CAM_TARGET.y+CAM_DIST*Math.cos(CAM_THETA);
+  var z=CAM_TARGET.z+CAM_DIST*Math.sin(CAM_THETA)*Math.cos(CAM_PHI);
+  CAM.position.set(x,y,z);CAM.lookAt(CAM_TARGET);
+}
+updateCamera();
+var _drag=false,_dragBtn=0,_lastX=0,_lastY=0;
+cvs.addEventListener('mousedown',function(e){_drag=true;_dragBtn=e.button;_lastX=e.clientX;_lastY=e.clientY;e.preventDefault();});
+window.addEventListener('mouseup',function(){_drag=false;});
+window.addEventListener('mousemove',function(e){
+  if(!_drag)return;
+  var dx=e.clientX-_lastX,dy=e.clientY-_lastY;_lastX=e.clientX;_lastY=e.clientY;
+  if(_dragBtn===0){CAM_PHI-=dx*0.008;CAM_THETA=Math.max(0.15,Math.min(Math.PI/2-0.05,CAM_THETA+dy*0.006));}
+  else if(_dragBtn===2){var right=new THREE.Vector3(Math.cos(CAM_PHI),0,-Math.sin(CAM_PHI));var forward=new THREE.Vector3(-Math.sin(CAM_PHI)*Math.cos(CAM_THETA),0,-Math.cos(CAM_PHI)*Math.cos(CAM_THETA));CAM_TARGET.addScaledVector(right,-dx*0.15);CAM_TARGET.addScaledVector(forward,dy*0.15);}
+  updateCamera();
+});
+cvs.addEventListener('wheel',function(e){CAM_DIST=Math.max(30,Math.min(250,CAM_DIST+e.deltaY*0.18));updateCamera();e.preventDefault();},{passive:false});
+var _touches={};
+cvs.addEventListener('touchstart',function(e){for(var i=0;i<e.touches.length;i++){var t=e.touches[i];_touches[t.identifier]={x:t.clientX,y:t.clientY};}e.preventDefault();},{passive:false});
+cvs.addEventListener('touchmove',function(e){
+  if(e.touches.length===1){var t=e.touches[0];var prev=_touches[t.identifier]||{x:t.clientX,y:t.clientY};var dx=t.clientX-prev.x,dy=t.clientY-prev.y;CAM_PHI-=dx*0.008;CAM_THETA=Math.max(0.15,Math.min(1.4,CAM_THETA+dy*0.006));updateCamera();_touches[t.identifier]={x:t.clientX,y:t.clientY};}
+  else if(e.touches.length===2){var t0=e.touches[0],t1=e.touches[1];var p0=_touches[t0.identifier]||{x:t0.clientX,y:t0.clientY};var p1=_touches[t1.identifier]||{x:t1.clientX,y:t1.clientY};var prevDist=Math.hypot(p0.x-p1.x,p0.y-p1.y);var curDist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);CAM_DIST=Math.max(30,Math.min(250,CAM_DIST-(curDist-prevDist)*0.5));updateCamera();_touches[t0.identifier]={x:t0.clientX,y:t0.clientY};_touches[t1.identifier]={x:t1.clientX,y:t1.clientY};}
+  e.preventDefault();
+},{passive:false});
+cvs.addEventListener('contextmenu',function(e){e.preventDefault();});
+SC.add(new THREE.AmbientLight(0xfff8f0,1.2));
+var SUN=new THREE.DirectionalLight(0xfffde8,2.2);SUN.position.set(80,120,60);SUN.castShadow=true;SUN.shadow.camera.left=-120;SUN.shadow.camera.right=120;SUN.shadow.camera.top=120;SUN.shadow.camera.bottom=-120;SUN.shadow.camera.near=1;SUN.shadow.camera.far=400;SUN.shadow.mapSize.set(2048,2048);SUN.shadow.bias=-0.001;SC.add(SUN);
+var fillLight=new THREE.DirectionalLight(0x8ab0ff,0.5);fillLight.position.set(-60,40,-40);SC.add(fillLight);
+function mat(col,rough,metal){return new THREE.MeshStandardMaterial({color:col,roughness:rough!==undefined?rough:0.6,metalness:metal!==undefined?metal:0.2});}
+function SM(col,r,m){return new THREE.MeshStandardMaterial({color:col,roughness:r!==undefined?r:0.6,metalness:m!==undefined?m:0.1});}
+function addBox(w,h,d,x,y,z,m,cast){var mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.castShadow=cast!==false;mesh.receiveShadow=true;SC.add(mesh);return mesh;}
+function addCyl(rt,rb,h,seg,x,y,z,m){var mesh=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;SC.add(mesh);return mesh;}
+var gnd=new THREE.Mesh(new THREE.PlaneGeometry(800,800),SM(0x4a7c3f,0.95,0));gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;SC.add(gnd);
+addBox(180,0.3,140,0,0.15,10,SM(0xc8c5b8,0.9,0.05),false);
+addBox(80,0.3,60,-70,0.15,0,SM(0xbebbb0,0.9,0.05),false);
+[-90,90].forEach(function(x){addBox(0.5,0.35,140,x,0.32,10,SM(0xffcc00,0.7,0));});
+[-60,80].forEach(function(z){addBox(180,0.35,0.5,0,0.32,z,SM(0xffcc00,0.7,0));});
+addBox(22,0.35,200,0,0.18,0,SM(0x2a2a2a,0.95,0),false);
+addBox(0.5,0.36,200,0,0.19,0,SM(0xffdd00,0.8,0));
+for(var ri=0;ri<8;ri++){addBox(1.5,0.36,6,ri*2.5-8.75,0.19,92,SM(0xffffff,0.85,0));addBox(1.5,0.36,6,ri*2.5-8.75,0.19,-92,SM(0xffffff,0.85,0));}
+for(var rd=-4;rd<=4;rd++){addBox(1.2,0.36,5,0,0.19,rd*18,SM(0x888888,0.9,0));}
+addBox(0.4,0.36,200,-11,0.19,0,SM(0xffffff,0.85,0));addBox(0.4,0.36,200,11,0.19,0,SM(0xffffff,0.85,0));
+addBox(14,0.32,180,-40,0.16,0,SM(0x323230,0.95,0),false);addBox(0.4,0.33,180,-33,0.17,0,SM(0xffcc00,0.8,0));addBox(14,0.32,60,40,0.16,60,SM(0x323230,0.95,0),false);
+var padPositions=[[-55,-40],[-55,-15],[-55,10],[-55,35],[55,-40],[55,-15],[55,10],[55,35]];
+padPositions.forEach(function(p,i){addBox(28,0.3,20,p[0],0.16,p[1],SM(0xb8b5a8,0.9,0.04),false);addBox(3,0.32,3,p[0],0.17,p[1]-8,SM(i<4?0xffdd00:0xffffff,0.7,0));addBox(0.4,0.32,18,p[0]-10,0.17,p[1],SM(0xffdd00,0.8,0));addBox(0.4,0.32,18,p[0]+10,0.17,p[1],SM(0xffdd00,0.8,0));addBox(28,0.32,0.4,p[0],0.17,p[1]+9,SM(0xffdd00,0.8,0));addBox(28,0.32,0.4,p[0],0.17,p[1]-9,SM(0xffdd00,0.8,0));});
+function buildHangar(x,z,w,d,h,col){col=col||0xd8d5cc;var wm=SM(col,0.7,0.15);addBox(w,0.4,d,x,0.2,z,SM(0xb0ada4,0.85,0.05),false);addBox(w,h,0.6,x,h/2,z-d/2,wm);addBox(0.6,h,d,x-w/2,h/2,z,wm);addBox(0.6,h,d,x+w/2,h/2,z,wm);var arch=new THREE.Mesh(new THREE.CylinderGeometry(d/2,d/2,w,16,1,false,0,Math.PI),SM(0xc5c2b8,0.72,0.2));arch.rotation.z=Math.PI/2;arch.position.set(x,h,z);SC.add(arch);addBox(w,h,0.5,x,h/2,z+d/2,SM(0x888880,0.8,0.3));addBox(w-3,h-1,0.6,x,h/2,z+d/2+0.1,SM(0x222220,0.9,0.1));}
+buildHangar(-65,-20,30,18,12);buildHangar(-65,8,30,18,12);buildHangar(-65,36,30,18,12,0xcfccbf);buildHangar(65,-20,30,18,12);buildHangar(65,8,30,18,12,0xcfccbf);
+// hangar labels
+var HANGAR_LABELS=[];
+var HANGAR_POS=[[-65,-20],[-65,8],[-65,36],[65,-20],[65,8]];
+HANGAR_POS.forEach(function(p){
+  var cv=document.createElement('canvas');cv.width=256;cv.height=128;
+  var tex=new THREE.CanvasTexture(cv);
+  var plane=new THREE.Mesh(new THREE.PlaneGeometry(22,11),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0.85,side:THREE.FrontSide}));
+  plane.rotation.x=-Math.PI/2;plane.position.set(p[0],12.6,p[1]);SC.add(plane);
+  HANGAR_LABELS.push({mesh:plane,canvas:cv,tex:tex,ctx:cv.getContext('2d')});
+});
+function updateHangarLabels(){
+  var owned=ACD.filter(a=>(S.owned[a.id]||0)>0).sort((a,b)=>(S.owned[b.id]||0)-(S.owned[a.id]||0));
+  HANGAR_LABELS.forEach(function(lb,i){
+    var ctx=lb.ctx,cv=lb.canvas;
+    ctx.clearRect(0,0,256,128);
+    if(i<owned.length){
+      var ac=owned[i];var cnt=S.owned[ac.id];
+      ctx.fillStyle='rgba(100,100,100,0.55)';ctx.font='bold 38px Arial';ctx.textAlign='center';
+      var short=ac.name.split(' ').slice(-1)[0].toUpperCase();if(short.length>6)short=ac.id.toUpperCase();
+      ctx.fillText(short,128,52);
+      ctx.font='bold 28px Arial';ctx.fillStyle='rgba(80,80,80,0.5)';
+      ctx.fillText('\xd7'+cnt,128,90);
+    }
+    lb.tex.needsUpdate=true;
+  });
+}
+function buildControlTower(x,z){addBox(10,4,10,x,2,z,SM(0xccc9be,0.75,0.2));addBox(7,28,7,x,18,z,SM(0xc5c2b8,0.7,0.25));addBox(12,2,12,x,33,z,SM(0xb8b5ac,0.65,0.3));addBox(10,4,10,x,36,z,SM(0xc0d8e8,0.1,0.5));addBox(10.4,4.4,10.4,x,36,z,SM(0x88aacc,0.2,0.6));addCyl(0.15,0.2,10,8,x,43,z,SM(0x888888,0.4,0.8));addCyl(0.05,0.05,5,6,x,47,z,SM(0xcc0000,0.4,0.5));var radar=new THREE.Group();var dish=new THREE.Mesh(new THREE.BoxGeometry(6,0.3,2),SM(0x888888,0.3,0.7));dish.position.y=0.2;radar.add(dish);var spine=new THREE.Mesh(new THREE.BoxGeometry(0.4,1.5,0.4),SM(0x666666,0.4,0.7));radar.add(spine);radar.position.set(x,41,z);SC.add(radar);return radar;}
+var towerRadar=buildControlTower(-85,-10);
+function buildRadarTower(x,z){addBox(4,1,4,x,0.5,z,SM(0xaaa8a0,0.7,0.3));addCyl(0.4,0.6,20,8,x,10.5,z,SM(0x888880,0.5,0.5));addBox(3,20,0.3,x,10.5,z,SM(0x888880,0.6,0.5));addBox(0.3,20,3,x,10.5,z,SM(0x888880,0.6,0.5));addBox(6,1,5,x,21,z,SM(0xcc2200,0.5,0.3));var dish=new THREE.Group();var dm=new THREE.Mesh(new THREE.CylinderGeometry(3,3,0.5,14,1,false,0,Math.PI),SM(0xaaaaaa,0.3,0.5));dm.rotation.x=-Math.PI/2;dish.add(dm);dish.position.set(x,22.5,z);SC.add(dish);return dish;}
+var radar2=buildRadarTower(90,-25);
+addBox(40,0.3,20,85,0.15,30,SM(0xb0ada4,0.9,0.05),false);
+[0,1,2,3].forEach(function(i){addCyl(3,3,9,14,72+i*8,4.5,30,SM(0xccaa88,0.6,0.4));addBox(6.2,0.5,6.2,72+i*8,8,30,SM(0xaa8855,0.5,0.5));addBox(6.2,0.5,6.2,72+i*8,4,30,SM(0xaa8855,0.5,0.5));});
+function buildWarehouse(x,z,w,d,col){col=col||0xd0cdc4;addBox(w,5,d,x,2.5,z,SM(col,0.8,0.1));var rg=new THREE.Mesh(new THREE.CylinderGeometry(d/2,d/2,w,12,1,false,0,Math.PI),SM(0x8a8880,0.75,0.15));rg.rotation.z=Math.PI/2;rg.position.set(x,5+d/2*0.7,z);SC.add(rg);}
+buildWarehouse(85,60,20,12);buildWarehouse(70,60,12,10,0xb8b5ac);buildWarehouse(85,80,16,10);
+addBox(22,6,14,85,3,-55,SM(0xb5b2a8,0.8,0.1));addBox(22,0.5,14,85,6.3,-55,SM(0x888880,0.7,0.2));addBox(4,6,0.5,85,3,-48.3,SM(0x333330,0.9,0.1));
+var fenceM=SM(0x888880,0.7,0.4);
+[-105,105].forEach(function(x){addBox(0.5,3,220,x,1.5,0,fenceM);});[-105,105].forEach(function(z){addBox(210,3,0.5,0,1.5,z,fenceM);});
+[[-100,-100],[100,-100],[-100,100],[100,100]].forEach(function(p){addBox(4,8,4,p[0],4,p[1],SM(0xaaa8a0,0.75,0.2));addBox(6,1.5,6,p[0],8.5,p[1],SM(0x666660,0.7,0.3));});
+addCyl(0.1,0.12,6,6,20,3,0,SM(0xdddddd,0.5,0.6));
+var wsock=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.5,8),SM(0xff4400,0.7,0.1));wsock.rotation.z=-Math.PI/2;wsock.position.set(21.5,6.2,0);SC.add(wsock);
+function addCloud(x,y,z,s){[0,1.5,-1.5,3,-3].forEach(function(ox){[0,1,-1].forEach(function(oz){var cm=new THREE.Mesh(new THREE.SphereGeometry((1.5+Math.random())*s,7,7),SM(0xffffff,1,0));cm.position.set(x+ox*s*2,y+Math.random()*s*0.5,z+oz*s*1.5);cm.scale.y=0.5;SC.add(cm);});});}
+addCloud(-200,140,-150,8);addCloud(180,160,100,10);addCloud(-150,170,200,7);addCloud(100,145,-200,9);
+var VEHICLES=[];
+function spawnMovingVehicle(){var routes=[{pts:[[-35,0,-30],[-35,0,20],[-35,0,40]],speed:0.08},{pts:[[35,0,-30],[35,0,10],[35,0,35]],speed:0.07},{pts:[[-30,0,0],[0,0,0],[30,0,0]],speed:0.1}];var r=routes[Math.floor(Math.random()*routes.length)];var cols=[0xffcc00,0x2244aa,0xdd2200,0xdddddd];var col=cols[Math.floor(Math.random()*cols.length)];var g=new THREE.Group();var body=new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,1.5),SM(col,0.7,0.2));body.position.y=0.9;g.add(body);[[-0.8,0.5,0.8],[-0.8,0.5,-0.8],[0.8,0.5,0.8],[0.8,0.5,-0.8]].forEach(function(w){var wm=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.25,8),SM(0x111111,0.9,0));wm.rotation.z=Math.PI/2;wm.position.set(w[0],w[1],w[2]);g.add(wm);});g.position.set(r.pts[0][0],0,r.pts[0][2]);SC.add(g);VEHICLES.push({group:g,route:r.pts,ptIdx:0,progress:0,speed:r.speed});}
+for(var vi=0;vi<6;vi++)spawnMovingVehicle();
+function tickVehicles(){VEHICLES.forEach(function(v){var cur=v.route[v.ptIdx];var nxt=v.route[Math.min(v.ptIdx+1,v.route.length-1)];var dx=nxt[0]-cur[0],dz=nxt[2]-cur[2];var len=Math.sqrt(dx*dx+dz*dz)||1;v.progress+=v.speed;if(v.progress>=len){v.ptIdx=(v.ptIdx+1)%v.route.length;v.progress=0;}var t=v.progress/len;v.group.position.x=cur[0]+dx*t;v.group.position.z=cur[2]+dz*t;if(len>0.1)v.group.rotation.y=Math.atan2(dx,dz);});}
+var lightM_w=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:1.5});var lightM_r=new THREE.MeshStandardMaterial({color:0xff2200,emissive:0xff2200,emissiveIntensity:2});
+for(var rli=-9;rli<=9;rli+=1){var lsph1=new THREE.Mesh(new THREE.SphereGeometry(0.22,6,6),lightM_w);lsph1.position.set(-12,0.3,rli*9);SC.add(lsph1);var lsph2=new THREE.Mesh(new THREE.SphereGeometry(0.22,6,6),lightM_w);lsph2.position.set(12,0.3,rli*9);SC.add(lsph2);}
+// ═══ AIRCRAFT MODELS ═══
+function mkMat(hex,rough,metal){return new THREE.MeshStandardMaterial({color:hex,roughness:rough!==undefined?rough:0.45,metalness:metal!==undefined?metal:0.65});}
+function mkGlow(hex,sz){return new THREE.Mesh(new THREE.SphereGeometry(sz||0.38,8,8),new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:2.2,transparent:true,opacity:0.9}));}
+function addM(g,geo,m,x,y,z,rx,ry,rz){var mesh=new THREE.Mesh(geo,m);mesh.position.set(x||0,y||0,z||0);if(rx)mesh.rotation.x=rx;if(ry)mesh.rotation.y=ry;if(rz)mesh.rotation.z=rz;mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);return mesh;}
+function buildF16(hex){var g=new THREE.Group();var bm=mkMat(hex,0.45,0.65);var dm=mkMat(hex,0.5,0.55);var gm=mkMat(0x1a2a3a,0.8,0.2);var nm=mkMat(0x777777,0.2,0.9);addM(g,new THREE.CylinderGeometry(0.25,0.5,8.5,10),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.04,0.25,2.0,8),bm,4.8,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(5.0,0.3,0.5),mkMat(hex,0.5,0.6),0.5,0.45,0);addM(g,new THREE.BoxGeometry(3.0,0.45,1.1),gm,1.2,-0.48,0);addM(g,new THREE.BoxGeometry(0.15,0.4,1.0),mkMat(0x0a0f14,0.9,0.1),2.65,-0.45,0);addM(g,new THREE.BoxGeometry(4.2,0.14,4.8),dm,0.2,0,0,0,0.42,0);addM(g,new THREE.BoxGeometry(2.8,0.09,3.2),dm,-1.5,0,3.8,0,0.22,0);addM(g,new THREE.BoxGeometry(2.8,0.09,3.2),dm,-1.5,0,-3.8,0,-0.22,0);addM(g,new THREE.BoxGeometry(2.5,0.12,1.0),dm,1.5,0.05,1.4,0,0.5,0);addM(g,new THREE.BoxGeometry(2.5,0.12,1.0),dm,1.5,0.05,-1.4,0,-0.5,0);addM(g,new THREE.BoxGeometry(0.13,2.5,2.2),bm,-2.0,1.25,0,0,0,0.1);addM(g,new THREE.BoxGeometry(0.11,2.2,0.95),dm,-3.2,0,1.55);addM(g,new THREE.BoxGeometry(0.11,2.2,0.95),dm,-3.2,0,-1.55);addM(g,new THREE.CylinderGeometry(0.42,0.32,1.3,12),nm,-4.3,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.32,0.42,0.5,12),mkMat(0x333333,0.5,0.8),-4.95,0,0,0,0,Math.PI/2);var gl=mkGlow(0xff6600,0.38);gl.position.set(-5.2,0,0);g.add(gl);addM(g,new THREE.SphereGeometry(0.3,10,8,0,Math.PI*2,0,Math.PI/2),mkMat(0x002244,0.05,0.95),1.9,0.48,0);addM(g,new THREE.CylinderGeometry(0.06,0.06,1.4,6),mkMat(0xcccccc,0.5,0.6),-0.8,0,5.25,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.06,0.06,1.4,6),mkMat(0xcccccc,0.5,0.6),-0.8,0,-5.25,0,0,Math.PI/2);return g;}
+function buildA10(hex){var g=new THREE.Group();var bm=mkMat(hex,0.7,0.25);var dm=mkMat(hex,0.72,0.22);addM(g,new THREE.BoxGeometry(9.0,1.1,1.4),bm,0,0,0);addM(g,new THREE.CylinderGeometry(0.28,0.55,2.5,8),bm,4.8,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.08,0.08,1.6,6),mkMat(0x555555,0.4,0.8),5.6,-0.25,0.2,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(1.5,0.22,15.0),dm,0.5,0.55,0);addM(g,new THREE.BoxGeometry(0.8,0.15,1.5),dm,0.5,0.42,7.8,0,0,-0.08);addM(g,new THREE.BoxGeometry(0.8,0.15,1.5),dm,0.5,0.42,-7.8,0,0,0.08);addM(g,new THREE.CylinderGeometry(0.48,0.42,3.2,10),mkMat(hex,0.65,0.3),-1.5,1.05,1.9,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.48,0.42,3.2,10),mkMat(hex,0.65,0.3),-1.5,1.05,-1.9,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.5,0.48,0.25,10),mkMat(0x0a0f14,0.9,0.1),0.1,1.05,1.9,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.5,0.48,0.25,10),mkMat(0x0a0f14,0.9,0.1),0.1,1.05,-1.9,0,0,Math.PI/2);var g1=mkGlow(0xff7700,0.3);g1.position.set(-3.1,1.05,1.9);g.add(g1);var g2=mkGlow(0xff7700,0.3);g2.position.set(-3.1,1.05,-1.9);g.add(g2);addM(g,new THREE.BoxGeometry(3.5,0.45,0.45),bm,-2.8,0.9,1.9);addM(g,new THREE.BoxGeometry(3.5,0.45,0.45),bm,-2.8,0.9,-1.9);addM(g,new THREE.BoxGeometry(0.14,1.8,1.6),bm,-4.0,1.6,1.9);addM(g,new THREE.BoxGeometry(0.14,1.8,1.6),bm,-4.0,1.6,-1.9);addM(g,new THREE.BoxGeometry(0.14,4.2,1.1),dm,-4.0,0.9,0,0,0,Math.PI/2);addM(g,new THREE.SphereGeometry(0.38,10,7,0,Math.PI*2,0,Math.PI/2),mkMat(0x002244,0.05,0.9),2.5,0.72,0);[-2.5,0.5,3.5].forEach(function(z){addM(g,new THREE.CylinderGeometry(0.07,0.07,1.5,6),mkMat(0x448844,0.6,0.4),0.5,0.3,z,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.07,0.07,1.5,6),mkMat(0x448844,0.6,0.4),0.5,0.3,-z,0,0,Math.PI/2);});return g;}
+function buildB2(hex){var g=new THREE.Group();var bm=mkMat(hex,0.65,0.15);var sm=mkMat(hex,0.6,0.2);addM(g,new THREE.BoxGeometry(5.5,0.6,4.5),bm,0,0,0);addM(g,new THREE.BoxGeometry(4.0,0.38,8.5),sm,-0.8,0,6.5,0,0.35,0);addM(g,new THREE.BoxGeometry(4.0,0.38,8.5),sm,-0.8,0,-6.5,0,-0.35,0);addM(g,new THREE.BoxGeometry(2.8,0.22,5.5),sm,-2.2,0,12.5,0,0.42,0);addM(g,new THREE.BoxGeometry(2.8,0.22,5.5),sm,-2.2,0,-12.5,0,-0.42,0);addM(g,new THREE.BoxGeometry(1.5,0.12,3.0),sm,-3.2,0,16.5,0,0.5,0);addM(g,new THREE.BoxGeometry(1.5,0.12,3.0),sm,-3.2,0,-16.5,0,-0.5,0);addM(g,new THREE.BoxGeometry(1.8,0.3,2.8),bm,-2.8,0,2.2,0,0.52,0);addM(g,new THREE.BoxGeometry(1.8,0.3,2.8),bm,-2.8,0,-2.2,0,-0.52,0);addM(g,new THREE.BoxGeometry(1.0,0.25,1.5),bm,-3.0,0,0,0,0,0);[-2.8,-0.9,0.9,2.8].forEach(function(z){addM(g,new THREE.BoxGeometry(1.0,0.15,0.7),mkMat(0x111111,0.9,0.1),-1.0,0.3,z);var eg=mkGlow(0x4455ff,0.22);eg.position.set(-1.5,0.28,z);g.add(eg);});addM(g,new THREE.BoxGeometry(2.2,0.1,3.2),mkMat(0x0a0a0a,0.95,0.05),-1.2,0.31,0);addM(g,new THREE.BoxGeometry(2.0,0.25,1.8),mkMat(hex,0.6,0.15),1.5,0.38,0);addM(g,new THREE.BoxGeometry(1.5,0.18,2.2),mkMat(0x001122,0.1,0.9),1.6,0.52,0);return g;}
+function buildAC130(hex){var g=new THREE.Group();var bm=mkMat(hex,0.72,0.25);var dm=mkMat(hex,0.7,0.22);addM(g,new THREE.CylinderGeometry(0.85,0.85,11.0,14),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.42,0.85,2.2,12),bm,5.6,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.5,0.85,2.5,10),bm,-5.0,-0.2,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(1.8,0.26,18.0),dm,0.5,0.88,0);addM(g,new THREE.BoxGeometry(3.0,0.6,2.0),mkMat(hex,0.7,0.22),0.5,0.7,0);[-6.5,-3.5,3.5,6.5].forEach(function(z){addM(g,new THREE.CylinderGeometry(0.32,0.3,2.2,10),mkMat(0x222222,0.6,0.4),0.5,0.88,z,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.15,0.32,0.6,10),mkMat(0x111111,0.8,0.3),1.6,0.88,z,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(1.05,1.05,0.07,16),mkMat(0x1a1a1a,0.9,0.05),2.0,0.88,z,0,0,Math.PI/2);var pg=mkGlow(0x334422,0.15);pg.position.set(2.05,0.88,z);g.add(pg);});addM(g,new THREE.BoxGeometry(0.18,3.5,2.8),bm,-4.5,2.0,0);addM(g,new THREE.BoxGeometry(0.16,7.5,1.4),dm,-4.5,3.8,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.12,0.12,2.5,8),mkMat(0x333333,0.5,0.7),-0.5,-0.1,-1.0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.08,0.08,1.8,6),mkMat(0x444444,0.5,0.7),1.0,-0.15,-1.0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.5,0.5,1.8),mkMat(0x001133,0.1,0.9),5.1,0.3,0);return g;}
+function buildSR71(hex){var g=new THREE.Group();var bm=mkMat(hex,0.25,0.85);var dm=mkMat(hex,0.3,0.8);var nm=mkMat(0x888888,0.2,0.95);addM(g,new THREE.CylinderGeometry(0.14,0.58,13.5,8),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.02,0.14,2.5,6),bm,7.2,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(12.0,0.1,0.9),dm,0,0,1.0,0,0,0.12);addM(g,new THREE.BoxGeometry(12.0,0.1,0.9),dm,0,0,-1.0,0,0,-0.12);addM(g,new THREE.BoxGeometry(5.5,0.12,5.0),dm,-0.5,-0.05,3.5,0,0.44,0.04);addM(g,new THREE.BoxGeometry(5.5,0.12,5.0),dm,-0.5,-0.05,-3.5,0,-0.44,-0.04);addM(g,new THREE.BoxGeometry(3.0,0.08,2.5),dm,-2.8,-0.05,5.8,0,0.5,0);addM(g,new THREE.BoxGeometry(3.0,0.08,2.5),dm,-2.8,-0.05,-5.8,0,-0.5,0);addM(g,new THREE.CylinderGeometry(0.55,0.48,7.0,12),bm,-0.5,0,2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.55,0.48,7.0,12),bm,-0.5,0,-2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.04,0.55,1.0,10),bm,3.0,0,2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.04,0.55,1.0,10),bm,3.0,0,-2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.65,0.56,2.0,12),mkMat(0x1a1a1a,0.7,0.5),2.5,0,2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.65,0.56,2.0,12),mkMat(0x1a1a1a,0.7,0.5),2.5,0,-2.4,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.13,2.6,2.4),bm,-2.8,1.2,2.4,0,0,-0.22);addM(g,new THREE.BoxGeometry(0.13,2.6,2.4),bm,-2.8,1.2,-2.4,0,0,0.22);addM(g,new THREE.CylinderGeometry(0.7,0.5,2.0,12),nm,-4.5,0,2.4,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.7,0.5,2.0,12),nm,-4.5,0,-2.4,0,0,Math.PI/2);var g1=mkGlow(0xff3300,0.6);g1.position.set(-5.6,0,2.4);g.add(g1);var g2=mkGlow(0xff3300,0.6);g2.position.set(-5.6,0,-2.4);g.add(g2);addM(g,new THREE.SphereGeometry(0.22,8,6,0,Math.PI*2,0,Math.PI/2),mkMat(0x001133,0.05,0.95),4.0,0.45,0);return g;}
+function buildE3(hex){var g=new THREE.Group();var bm=mkMat(hex,0.55,0.4);var dm=mkMat(hex,0.58,0.38);addM(g,new THREE.CylinderGeometry(0.78,0.78,12.5,16),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.32,0.78,2.5,12),bm,6.5,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.25,0.78,2.0,10),bm,-6.8,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(6.5,0.2,11.0),dm,-0.5,0,0,0,0.3,0);[-5.5,-2.8,2.8,5.5].forEach(function(z){addM(g,new THREE.BoxGeometry(0.15,1.0,0.3),mkMat(hex,0.6,0.3),0.5,-0.65,z);addM(g,new THREE.CylinderGeometry(0.4,0.35,2.8,12),mkMat(0x222222,0.55,0.45),0.5,-1.2,z,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.42,0.4,0.25,12),mkMat(0x050a0f,0.9,0.1),1.4,-1.2,z,0,0,Math.PI/2);var eg=mkGlow(0x3366ff,0.2);eg.position.set(-0.4,-1.2,z);g.add(eg);});addM(g,new THREE.BoxGeometry(0.18,3.8,3.2),bm,-5.5,1.9,0);addM(g,new THREE.BoxGeometry(0.16,6.0,1.6),dm,-5.5,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.28,2.2,0.28),mkMat(0xaaaaaa,0.4,0.7),-0.5,1.6,1.2);addM(g,new THREE.BoxGeometry(0.28,2.2,0.28),mkMat(0xaaaaaa,0.4,0.7),-0.5,1.6,-1.2);addM(g,new THREE.CylinderGeometry(5.2,5.2,0.6,24),mkMat(0xdddddd,0.35,0.3),-0.5,2.9,0,0,0,Math.PI/2);return g;}
+function buildMQ9(hex){var g=new THREE.Group();var bm=mkMat(hex,0.55,0.35);var dm=mkMat(hex,0.58,0.32);addM(g,new THREE.CylinderGeometry(0.18,0.38,7.5,10),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.SphereGeometry(0.38,10,8),bm,3.8,0,0);addM(g,new THREE.SphereGeometry(0.32,10,10),mkMat(0x111111,0.2,0.3),3.5,-0.38,0);addM(g,new THREE.BoxGeometry(0.22,17.0,1.9),dm,0.3,0.35,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.12,0.12,1.2,6),mkMat(0x888888,0.6,0.5),0.3,0.35,9.0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.12,0.12,1.2,6),mkMat(0x888888,0.6,0.5),0.3,0.35,-9.0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.12,2.4,1.9),bm,-3.2,-0.8,1.2,0,0,-0.6);addM(g,new THREE.BoxGeometry(0.12,2.4,1.9),bm,-3.2,-0.8,-1.2,0,0,0.6);addM(g,new THREE.CylinderGeometry(0.18,0.25,0.8,8),bm,-3.8,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.8,0.8,0.06,14),mkMat(0x1a1a1a,0.9,0.05),-4.2,0,0,0,0,Math.PI/2);var gl=mkGlow(0xff8800,0.18);gl.position.set(-4.5,0,0);g.add(gl);[-4.5,-3.0,3.0,4.5].forEach(function(z){addM(g,new THREE.CylinderGeometry(0.065,0.065,1.3,6),mkMat(0x3a5a2a,0.6,0.4),0.3,-0.52,z,0,0,Math.PI/2);});return g;}
+function buildF22(hex){var g=new THREE.Group();var bm=mkMat(hex,0.38,0.72);var dm=mkMat(hex,0.42,0.68);var nm=mkMat(0x888888,0.2,0.9);addM(g,new THREE.BoxGeometry(9.5,1.1,2.2),bm,0,0,0);addM(g,new THREE.BoxGeometry(7.0,0.4,1.0),bm,0.5,0.72,0);addM(g,new THREE.BoxGeometry(3.2,0.9,1.8),bm,4.0,0,0,0,0.05,0);addM(g,new THREE.CylinderGeometry(0.12,0.55,1.8,8),bm,5.5,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(5.0,0.18,6.5),dm,0.2,0,5.2,0,0.35,0);addM(g,new THREE.BoxGeometry(5.0,0.18,6.5),dm,0.2,0,-5.2,0,-0.35,0);addM(g,new THREE.BoxGeometry(2.5,0.14,1.2),dm,2.8,0,4.0,0,0.5,0);addM(g,new THREE.BoxGeometry(2.5,0.14,1.2),dm,2.8,0,-4.0,0,-0.5,0);addM(g,new THREE.BoxGeometry(0.16,2.8,2.6),bm,-3.0,1.4,1.8,0,0,0.48);addM(g,new THREE.BoxGeometry(0.16,2.8,2.6),bm,-3.0,1.4,-1.8,0,0,-0.48);addM(g,new THREE.BoxGeometry(0.14,3.2,1.3),dm,-4.0,0,2.8);addM(g,new THREE.BoxGeometry(0.14,3.2,1.3),dm,-4.0,0,-2.8);addM(g,new THREE.BoxGeometry(3.5,0.65,1.0),mkMat(0x111a22,0.75,0.25),1.2,-0.62,1.4);addM(g,new THREE.BoxGeometry(3.5,0.65,1.0),mkMat(0x111a22,0.75,0.25),1.2,-0.62,-1.4);addM(g,new THREE.BoxGeometry(1.4,0.75,0.95),nm,-5.0,0,0.95);addM(g,new THREE.BoxGeometry(1.4,0.75,0.95),nm,-5.0,0,-0.95);var g1=mkGlow(hex,0.35);g1.position.set(-6.0,0,0.95);g.add(g1);var g2=mkGlow(hex,0.35);g2.position.set(-6.0,0,-0.95);g.add(g2);addM(g,new THREE.SphereGeometry(0.35,10,7,0,Math.PI*2,0,Math.PI/2),mkMat(0x001133,0.05,0.95),2.5,0.65,0);return g;}
+function buildB52(hex){var g=new THREE.Group();var bm=mkMat(hex,0.65,0.35);var dm=mkMat(hex,0.68,0.3);addM(g,new THREE.CylinderGeometry(0.72,0.72,15.0,14),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.28,0.72,3.0,12),bm,7.5,0,0,0,0,Math.PI/2);addM(g,new THREE.SphereGeometry(0.55,10,8,0,Math.PI*2,Math.PI/2,Math.PI/2),bm,6.8,-0.4,0,Math.PI,0,0);addM(g,new THREE.BoxGeometry(0.18,5.5,4.0),bm,-6.5,2.75,0);addM(g,new THREE.BoxGeometry(0.16,8.0,1.8),dm,-6.5,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(7.0,0.25,15.0),dm,-0.5,-0.6,0,0,0.32,0.08);addM(g,new THREE.BoxGeometry(2.5,0.16,3.5),dm,-3.5,-1.5,10.5,0,0.3,0.2);addM(g,new THREE.BoxGeometry(2.5,0.16,3.5),dm,-3.5,-1.5,-10.5,0,0.3,-0.2);[-8.5,-5.5,5.5,8.5].forEach(function(z){addM(g,new THREE.BoxGeometry(0.2,1.8,0.3),mkMat(hex,0.65,0.3),1.5,-1.8,z);addM(g,new THREE.CylinderGeometry(0.32,0.28,2.8,10),mkMat(0x1a1a1a,0.6,0.5),1.5,-2.8,z,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.32,0.28,2.8,10),mkMat(0x1a1a1a,0.6,0.5),0.3,-2.8,z,0,0,Math.PI/2);var eg1=mkGlow(0x4455ff,0.22);eg1.position.set(-0.2,-2.8,z);g.add(eg1);var eg2=mkGlow(0x4455ff,0.22);eg2.position.set(-1.0,-2.8,z);g.add(eg2);});addM(g,new THREE.BoxGeometry(0.8,0.65,2.2),mkMat(0x001133,0.08,0.92),6.5,0.4,0);return g;}
+function buildF35(hex){var g=new THREE.Group();var bm=mkMat(hex,0.42,0.68);var dm=mkMat(hex,0.45,0.64);var nm=mkMat(0x888888,0.2,0.9);addM(g,new THREE.BoxGeometry(8.5,1.35,2.5),bm,0,0,0);addM(g,new THREE.CylinderGeometry(1.35,1.2,8.5,10),mkMat(hex,0.42,0.68),0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.2,0.75,2.8,10),bm,4.5,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(5.0,0.55,1.4),bm,-0.5,0.82,0);addM(g,new THREE.BoxGeometry(3.5,0.7,1.5),mkMat(0x0d1520,0.8,0.2),1.5,-0.78,0);addM(g,new THREE.BoxGeometry(4.5,0.19,6.5),dm,0.0,0,5.0,0,0.28,0);addM(g,new THREE.BoxGeometry(4.5,0.19,6.5),dm,0.0,0,-5.0,0,-0.28,0);addM(g,new THREE.BoxGeometry(0.16,2.6,2.3),bm,-3.0,1.3,1.5,0,0,0.26);addM(g,new THREE.BoxGeometry(0.16,2.6,2.3),bm,-3.0,1.3,-1.5,0,0,-0.26);addM(g,new THREE.BoxGeometry(0.14,2.8,1.2),dm,-3.8,0,2.2);addM(g,new THREE.BoxGeometry(0.14,2.8,1.2),dm,-3.8,0,-2.2);addM(g,new THREE.CylinderGeometry(0.5,0.38,1.2,12),nm,-4.5,0,0,0,0,Math.PI/2);var gl=mkGlow(hex,0.42);gl.position.set(-5.4,0,0);g.add(gl);addM(g,new THREE.SphereGeometry(0.42,10,8,0,Math.PI*2,0,Math.PI/2),mkMat(0x001133,0.05,0.95),2.2,0.88,0);return g;}
+function buildB21(hex){var g=new THREE.Group();var bm=mkMat(hex,0.6,0.18);var sm=mkMat(hex,0.58,0.22);addM(g,new THREE.BoxGeometry(6.5,0.55,5.5),bm,0,0,0);addM(g,new THREE.CylinderGeometry(0.55,0.3,5.5,12),bm,3.0,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(5.0,0.4,9.0),sm,-1.2,0,7.0,0,0.3,0);addM(g,new THREE.BoxGeometry(5.0,0.4,9.0),sm,-1.2,0,-7.0,0,-0.3,0);addM(g,new THREE.BoxGeometry(3.5,0.26,6.0),sm,-2.8,0,13.5,0,0.4,0);addM(g,new THREE.BoxGeometry(3.5,0.26,6.0),sm,-2.8,0,-13.5,0,-0.4,0);addM(g,new THREE.BoxGeometry(2.0,0.14,3.5),sm,-4.0,0,17.5,0,0.52,0);addM(g,new THREE.BoxGeometry(2.0,0.14,3.5),sm,-4.0,0,-17.5,0,-0.52,0);[-2.2,-0.7,0.7,2.2].forEach(function(z){addM(g,new THREE.BoxGeometry(1.5,0.12,0.9),mkMat(0x080a0d,0.95,0.05),-1.2,0.28,z);var eg=mkGlow(0x3344ff,0.2);eg.position.set(-1.8,0.26,z);g.add(eg);});addM(g,new THREE.BoxGeometry(3.0,0.3,2.5),mkMat(hex,0.58,0.18),1.5,0.35,0);return g;}
+function buildU2(hex){var g=new THREE.Group();var bm=mkMat(hex,0.6,0.35);var dm=mkMat(hex,0.62,0.32);addM(g,new THREE.CylinderGeometry(0.2,0.42,9.5,10),bm,0,0,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.06,0.2,2.0,8),bm,5.2,0,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.25,20.0,2.1),dm,0.5,0.42,0,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.2,3.0,1.4),dm,0.5,0.18,10.5,0,0,-0.25);addM(g,new THREE.BoxGeometry(0.2,3.0,1.4),dm,0.5,0.18,-10.5,0,0,0.25);addM(g,new THREE.CylinderGeometry(0.14,0.14,2.5,8),bm,0.5,0.42,5.5,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.14,0.14,2.5,8),bm,0.5,0.42,-5.5,0,0,Math.PI/2);addM(g,new THREE.BoxGeometry(0.15,3.2,2.8),bm,-4.2,1.6,0);addM(g,new THREE.BoxGeometry(0.15,5.5,1.4),dm,-4.2,3.2,0,0,0,Math.PI/2);addM(g,new THREE.CylinderGeometry(0.28,0.25,1.0,10),mkMat(0x777777,0.25,0.85),-4.6,0,0,0,0,Math.PI/2);var gl=mkGlow(hex,0.22);gl.position.set(-4.9,0,0);g.add(gl);addM(g,new THREE.SphereGeometry(0.25,10,7,0,Math.PI*2,0,Math.PI/2),mkMat(0x001133,0.05,0.95),2.8,0.38,0);return g;}
+var BUILDERS={f16:buildF16,a10:buildA10,b2:buildB2,ac130:buildAC130,sr71:buildSR71,e3:buildE3,mq9:buildMQ9,f22:buildF22,b52:buildB52,f35:buildF35,b21:buildB21,u2:buildU2};
+const PLANES=ACD.map(function(ac,i){var hexCol=parseInt(ac.col.replace('#',''),16);var builder=BUILDERS[ac.id];var grp=builder?builder(hexCol):new THREE.Group();grp.scale.setScalar(1.0+i*0.02);grp.visible=false;grp.userData={rad:58+i*18,spd:0.20-i*0.006,phase:(i/ACD.length)*Math.PI*2,ht:20+i*5,bf:0.3+i*0.06};SC.add(grp);return grp;});
+var PAD_POSITIONS=[[-55,-40],[-55,-15],[-55,10],[-55,35],[55,-40],[55,-15],[55,10],[55,35]];
+var PARKED_PLANES={};
+function refreshParkedAircraft(){Object.values(PARKED_PLANES).forEach(function(g){SC.remove(g);});PARKED_PLANES={};var padIdx=0;ACD.forEach(function(ac,i){var count=S.owned[ac.id]||0;if(!count||padIdx>=PAD_POSITIONS.length)return;var pos=PAD_POSITIONS[padIdx++];var hexCol=parseInt(ac.col.replace('#',''),16);var builder=BUILDERS[ac.id];if(!builder)return;var grp=builder(hexCol);grp.scale.setScalar(0.55);grp.position.set(pos[0],0.3,pos[1]);grp.rotation.y=Math.PI/2;SC.add(grp);PARKED_PLANES[ac.id]=grp;if(count>1){for(var extra=1;extra<Math.min(count,3);extra++){if(padIdx>=PAD_POSITIONS.length)break;var pos2=PAD_POSITIONS[padIdx++];var grp2=builder(hexCol);grp2.scale.setScalar(0.55);grp2.position.set(pos2[0],0.3,pos2[1]);grp2.rotation.y=Math.PI/2;SC.add(grp2);}}});}
+function updatePlanes(){ACD.forEach(function(a,i){PLANES[i].visible=(S.owned[a.id]||0)>0;});refreshParkedAircraft();updateHangarLabels();}
+var EVENTS=[];var EXHAUST_PARTICLES=[];
+function spawnExhaust(pos,col,count){for(var i=0;i<(count||8);i++){var g=new THREE.Mesh(new THREE.SphereGeometry(0.15+Math.random()*0.2,4,4),new THREE.MeshStandardMaterial({color:col||0xff6600,emissive:col||0xff6600,emissiveIntensity:1.5,transparent:true,opacity:0.8}));g.position.copy(pos);SC.add(g);EXHAUST_PARTICLES.push({mesh:g,vel:new THREE.Vector3((Math.random()-0.5)*0.3,0.1+Math.random()*0.4,(Math.random()-0.5)*0.3),life:0,maxLife:40+Math.random()*30});}}
+function triggerTakeoff(acId){var idx=ACD.findIndex(function(a){return a.id===acId;});if(idx<0)return;var p=PLANES[idx];if(!p.visible)return;var hexCol=parseInt(ACD[idx].col.replace('#',''),16);var tok=new THREE.Mesh(new THREE.BoxGeometry(4,0.6,1.2),new THREE.MeshStandardMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.4,metalness:0.7,roughness:0.4}));tok.position.set(-8,0.5,0);SC.add(tok);EVENTS.push({type:'takeoff',acIdx:idx,mesh:tok,t:0,duration:180,startPos:new THREE.Vector3(-8,0.5,0),endPos:new THREE.Vector3(60,40,0),hexCol:hexCol});}
+function triggerLanding(acId){var idx=ACD.findIndex(function(a){return a.id===acId;});if(idx<0||(S.owned[acId]||0)===0)return;var hexCol=parseInt(ACD[idx].col.replace('#',''),16);var tok=new THREE.Mesh(new THREE.BoxGeometry(4,0.6,1.2),new THREE.MeshStandardMaterial({color:hexCol,emissive:hexCol,emissiveIntensity:0.3,metalness:0.7,roughness:0.4}));tok.position.set(60,35,0);SC.add(tok);EVENTS.push({type:'land',acIdx:idx,mesh:tok,t:0,duration:200,startPos:new THREE.Vector3(60,35,0),endPos:new THREE.Vector3(-8,0.5,0),hexCol:hexCol});}
+function tickEvents(){var toRemove=[];EVENTS.forEach(function(ev,ei){ev.t++;var progress=ev.t/ev.duration;var eased=progress<0.5?2*progress*progress:1-Math.pow(-2*progress+2,2)/2;if(ev.type==='takeoff'){ev.mesh.position.lerpVectors(ev.startPos,ev.endPos,eased);ev.mesh.rotation.z=-eased*0.3;if(ev.t%4===0)spawnExhaust(ev.mesh.position.clone(),ev.hexCol,3);}else if(ev.type==='land'){ev.mesh.position.lerpVectors(ev.startPos,ev.endPos,eased);ev.mesh.rotation.z=eased*0.15;if(ev.t%6===0&&progress>0.7)spawnExhaust(ev.mesh.position.clone(),0xffffff,2);}if(ev.t>=ev.duration){SC.remove(ev.mesh);toRemove.push(ei);}});toRemove.reverse().forEach(function(i){EVENTS.splice(i,1);});var deadParts=[];EXHAUST_PARTICLES.forEach(function(p,pi){p.life++;p.mesh.position.add(p.vel);p.vel.y+=0.012;var fade=1-p.life/p.maxLife;p.mesh.material.opacity=fade*0.7;p.mesh.scale.setScalar(1+p.life*0.04);if(p.life>=p.maxLife){SC.remove(p.mesh);deadParts.push(pi);}});deadParts.reverse().forEach(function(i){EXHAUST_PARTICLES.splice(i,1);});}
+function onMissionComplete(missionId){var md=MID.find(function(m){return m.id===missionId;});if(md)triggerLanding(md.ac);}
+function resizeSC(){var vs=document.getElementById('view-scene');if(!vs)return;var w=vs.clientWidth,h=vs.clientHeight;R.setSize(w,h,false);CAM.aspect=w/h;CAM.updateProjectionMatrix();updateCamera();}
+resizeSC();window.addEventListener('resize',resizeSC);
+let T=0;
+(function anim(){requestAnimationFrame(anim);T+=0.007;PLANES.forEach(function(p,i){if(!p.visible)return;const ud=p.userData;const ang=T*ud.spd+ud.phase;p.position.set(Math.cos(ang)*ud.rad,ud.ht+Math.sin(T*ud.bf)*2.5,Math.sin(ang)*ud.rad);p.rotation.y=-(ang+Math.PI/2);p.rotation.z=Math.sin(T*ud.bf*0.4)*0.08;const gi=1.4+Math.sin(T*3+i)*0.5;p.traverse(function(ch){if(ch.isMesh&&ch.material&&ch.material.emissive&&ch.material.emissiveIntensity>0){ch.material.emissiveIntensity=gi;}});});tickEvents();tickVehicles();towerRadar.rotation.y=T*0.7;radar2.rotation.y=-T*0.5;CAM.position.x=Math.sin(T*0.025)*25;CAM.position.z=100+Math.cos(T*0.02)*18;CAM.lookAt(0,6,0);R.render(SC,CAM);})();
+function updateSceneHUD(){var el=document.getElementById('scene-hud');var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var chips='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag:orbit · Scroll:zoom · R-drag:pan</div>';if(owned.length){chips+=owned.map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' <b>\xd7'+S.owned[a.id]+'</b></div>';}).join('');}el.innerHTML=chips;}
+
+// ═══ RENDER — FLEET ═══
+function renderFleet(){
+  const fl=fleet();const mb=S.upgLvl['multi_buy']>0;const qty=mb?10:1;
+  document.getElementById('view-fleet').innerHTML=
+    `<div class="sh">Aircraft Roster <span>${fl} total · $${fmtN(ips())}/s</span></div>
+    <div class="acg">`+
+    ACD.map(ac=>{
+      const cnt=S.owned[ac.id]||0;const locked=fl<ac.unlockF;
+      let totalCost=0;for(let i=0;i<qty;i++)totalCost+=ac.cost*Math.pow(ac.cg,cnt+i);totalCost=Math.floor(totalCost);
+      // stealth discount for B-2/B-21
+      if((ac.id==='b2'||ac.id==='b21')&&(S.cmdLvl['phantom']||0)>0)totalCost=Math.floor(totalCost*stealthDiscount());
+      const canAfford=!locked&&S.credits>=totalCost;
+      const nextCost=Math.floor(ac.cost*Math.pow(ac.cg,cnt+qty));
+      return`<div class="acc${locked?' locked':''}" style="border-top:2px solid ${ac.col}">
+        ${cnt>0?`<div class="cnt">\xd7${cnt}</div>`:''}
+        <div class="aname">${ac.name}</div>
+        <div class="arole">${ac.role}</div>
+        <div class="astat"><span class="k">$/sec</span><span class="v">$${fmtN(ac.ips*(cnt||1))}</span></div>
+        <div class="aspec">${ac.spec}</div>
+        ${locked
+          ?`<button class="btn bm" disabled style="font-size:10px">Need ${ac.unlockF} fleet</button>`
+          :`<button class="btn ${canAfford?'bg':'bm'}" ${!canAfford?'disabled':''} onclick="buyAC('${ac.id}')">
+            ${mb?'\xd710 ':''}Buy $${fmtN(totalCost)}
+           </button>
+           ${cnt>0?`<div style="font-size:9px;color:var(--muted);text-align:center;margin-top:2px">Next: $${fmtN(nextCost)}</div>`:''}`}
+      </div>`;
+    }).join('')+`</div>`;
+}
+// ═══ RENDER — MISSIONS ═══
+function renderMissions(){
+  const m=calcMods();const now=Date.now();
+  document.getElementById('view-missions').innerHTML=
+    `<div class="sh">Operations <span>${S.missionsComplete} complete</span></div>`+
+    MID.map(md=>{
+      const ac=ACD.find(a=>a.id===md.ac);const ms=S.missions[md.id];const owned=S.owned[md.ac]||0;
+      const dur=Math.max(3,Math.round(md.dur*m.speed));const reward=Math.floor(md.base*m.reward*S.prestigeMult*(1+(S.medals||0)*2)*(1+(S.ribbons||0)*5));
+      const autoUpg=UPG.find(u=>u.effect==='auto'&&u.ac===md.ac);const isAuto=autoUpg&&(S.upgLvl[autoUpg.id]||0)>0;
+      const canLaunch=owned>0&&!ms.active;let timerTxt='';
+      if(ms.active){const rem=Math.max(0,Math.ceil((ms.endTime-now)/1000));timerTxt=`${rem}s`;}
+      return`<div class="mc${ms.active?' run':''}${isAuto?' auto':''}">
+        <div class="mh"><div><div class="mt">${md.name}</div>
+        <div class="ms">${ac.name.split(' ')[0]} · ${dur}s · ${isAuto?'<span style="color:var(--g)">⚡ AUTO</span>':'Manual'}</div></div>
+        <div class="bdg bdg-a">$${fmtN(reward)}</div></div>
+        <div style="font-size:10px;color:var(--muted)">${md.desc}</div>
+        ${ms.active
+          ?`<div class="pw"><div class="pf b" id="p${md.id}" style="width:${Math.min(100,ms.progress*100).toFixed(1)}%"></div></div>
+            <div class="mf"><span style="font-size:10px;color:var(--b)">⏱ ${timerTxt} remaining</span><span class="bdg bdg-b">In Progress</span></div>`
+          :`<button class="btn ${canLaunch?'bb':'bm'}" ${!canLaunch?'disabled':''} onclick="launch('${md.id}')">
+              ${owned===0?'Need '+ac.name.split(' ')[0]:'Launch Mission'}
+            </button>`}
+      </div>`;
+    }).join('');
+}
+// ═══ RENDER — UPGRADES + COMMANDERS ═══
+function renderUpgrades(){
+  const cmdSection=`<div class="sh" style="margin-top:16px">Command Staff <span>Stars: ★${S.prestigeStars}</span></div>`+
+    COMMANDERS.map(c=>{
+      const lvl=S.cmdLvl[c.id]||0;const maxed=lvl>=c.maxL;
+      const cost=c.cost*(lvl+1);const canAfford=!maxed&&S.prestigeStars>=cost;
+      return`<div class="cmdcard${lvl>0?' hired':''}">
+        <div class="cmdhd"><div class="cmdico">${c.icon}</div>
+        <div style="flex:1"><div class="cmdnm">${c.name}</div><div class="cmddesc">${c.desc}</div>
+        <div class="cmdbns">${c.bonus}</div></div>
+        ${lvl>0?`<div class="bdg bdg-g">Lv${lvl}</div>`:''}
+        </div>
+        ${maxed?'<div class="bdg bdg-g" style="width:100%;text-align:center;padding:5px">MAX LEVEL</div>'
+          :`<button class="btn ${canAfford?'ba':'bm'}" ${!canAfford?'disabled':''} onclick="hireCommander('${c.id}')">
+            ${lvl===0?'Hire':'Upgrade'} — ★${cost} stars
+           </button>`}
+      </div>`;
+    }).join('');
+  document.getElementById('view-upgrades').innerHTML=
+    `<div class="sh">Technology <span>Prestige ★${S.prestigeStars}</span></div>`+
+    UPG.map(u=>{
+      const lvl=S.upgLvl[u.id]||0;const maxed=lvl>=u.maxL;const cost=maxed?0:upgCost(u,lvl);const canAfford=!maxed&&S.credits>=cost;
+      if(u.effect==='auto'){const owned=S.owned[u.ac]||0;if(!owned&&!lvl)return`<div class="uc" style="opacity:0.3"><div class="uh"><div class="ui">${u.icon}</div><div><div class="un">${u.name}</div><div class="ud">Requires ${ACD.find(a=>a.id===u.ac)?.name.split(' ')[0]}</div></div></div></div>`;}
+      const dots=u.maxL<=20?`<div class="dots">${Array.from({length:Math.min(u.maxL,20)},(_,i)=>`<div class="dot${i<lvl?' on':''}"></div>`).join('')}</div>`:`<div style="font-size:10px;color:var(--b);margin-bottom:7px">Level ${lvl.toLocaleString()} / ${u.maxL===999?'∞':u.maxL}</div>`;
+      return`<div class="uc"><div class="uh"><div class="ui">${u.icon}</div><div style="flex:1"><div class="un">${u.name}</div><div class="ud">${u.desc}</div><div class="ul">Level ${lvl}${u.maxL===999?'':'/'+u.maxL}</div></div>${maxed?'<div class="bdg bdg-g">MAX</div>':''}</div>${dots}<button class="btn ${maxed?'bm':(canAfford?'ba':'bm')}" ${(maxed||!canAfford)?'disabled':''} onclick="buyUpg('${u.id}')">${maxed?'Maxed':'Upgrade — $'+fmtN(cost)}</button></div>`;
+    }).join('')+cmdSection;
+}
+// ═══ RENDER — BASE ═══
+function renderBase(){
+  document.getElementById('view-base').innerHTML=
+    `<div class="sh">Base Infrastructure <span>$${fmtN(ips())}/sec</span></div>`+
+    BLDG.map(b=>{
+      const built=S.buildings[b.id];const reqBuilt=!b.req||S.buildings[b.req];const canAfford=!built&&reqBuilt&&S.credits>=b.cost;const reqName=b.req?BLDG.find(x=>x.id===b.req)?.name:'';
+      return`<div class="bc${built?' built':''}"><div class="bh"><div class="bi">${b.icon}</div><div style="flex:1"><div class="bn">${b.name}</div><div class="bd">${b.desc}</div><div class="be">${b.effect}</div></div>${built?'<div class="bdg bdg-g">Built</div>':''}</div>
+      ${built?'':`<button class="btn ${canAfford?'bg':'bm'}" ${!canAfford?'disabled':''} onclick="build('${b.id}')">${!reqBuilt?'Requires: '+reqName:'Build — $'+fmtN(b.cost)}</button>`}</div>`;
+    }).join('');
+}
+// ═══ RENDER — WAR ═══
+let warEnemies=null;
+function renderWar(forceNew=false){
+  const fl=fleet();const wp=warPower();const el=document.getElementById('view-war');
+  if(fl<5){el.innerHTML=`<div style="text-align:center;padding:32px 16px"><div style="font-family:'Orbitron',sans-serif;font-size:18px;color:var(--r);margin-bottom:8px">⚔ WAR MODE</div><div style="font-size:13px;color:var(--muted)">Deploy 5+ aircraft to engage</div><div style="font-size:26px;margin:12px 0">⚔️</div><div style="font-size:12px;color:var(--muted)">Fleet: ${fl}/5</div></div>`;return;}
+  // theatre section
+  let html=`<div class="sh">Theatre Operations <span>⚔️${fmtN(wp)}</span></div>`;
+  THEATRES.forEach(th=>{
+    const wins=S.theatreWins[th.id]||0;const conquered=wins>=5;
+    const reqMet=!th.reqTheatre||(S.theatreWins[th.reqTheatre]||0)>=5;
+    if(!reqMet&&!conquered)return;
+    html+=`<div class="thcard${conquered?' conquered':''}">
+      <div class="thname">${th.icon} ${th.name}${conquered?'<span class="bdg bdg-g">★ CONQUERED</span>':''}</div>
+      <div class="bgrid">${th.battles.map((b,i)=>{
+        const won=(wins||0)>i;const avail=i===wins&&reqMet&&!conquered;const locked=i>wins;
+        const wchance=Math.min(95,Math.max(5,Math.round(wp/(wp+warPower()*b.pm)*100)));
+        return`<div class="bbtn ${won?'won':avail?'avail':'locked'}" ${avail?`onclick="engageTheatre('${th.id}',${i})"`:''}>${won?'✓':avail?`${wchance}%`:'🔒'}<br><span style="font-size:7px">${b.name.split(' ')[0]}</span></div>`;
+      }).join('')}</div>
+      ${conquered?`<div style="font-size:10px;color:var(--g);text-align:center">${th.bonus}</div>`:`<div style="font-size:10px;color:var(--muted)">${wins}/5 battles · ${th.bonus}</div>`}
+    </div>`;
+  });
+  // add first theatre always if not shown yet
+  if(!(S.theatreWins['desert']>=5)&&(S.theatreWins['desert']||0)===0&&fl>=5){
+    const th=THEATRES[0];const wins=0;const wp2=warPower();
+    html=`<div class="sh">Theatre Operations <span>⚔️${fmtN(wp)}</span></div>
+    <div class="thcard">
+      <div class="thname">${th.icon} ${th.name}</div>
+      <div class="bgrid">${th.battles.map((b,i)=>{
+        const avail=i===0;
+        const wchance=Math.min(95,Math.max(5,Math.round(wp2/(wp2+wp2*b.pm)*100)));
+        return`<div class="bbtn ${avail?'avail':'locked'}" ${avail?`onclick="engageTheatre('${th.id}',${i})"`:''}>${avail?`${wchance}%`:'🔒'}<br><span style="font-size:7px">${b.name.split(' ')[0]}</span></div>`;
+      }).join('')}</div>
+      <div style="font-size:10px;color:var(--muted)">0/5 battles · ${th.bonus}</div>
+    </div>`+html.replace(`<div class="sh">Theatre Operations <span>⚔️${fmtN(wp)}</span></div>`,'');
+  }
+  // quick strikes
+  html+=`<div class="sh" style="margin-top:12px">Quick Strike <span>Skirmish Mode</span></div>`;
+  if(!warEnemies||forceNew)warEnemies=genEnemies(wp);
+  html+=warEnemies.map((e,i)=>`<div class="wcard">
+    <div class="wname">⚠ ${e.name}</div>
+    <div class="wstats">
+      <div class="wstat">Power <span>⚔️${fmtN(e.power)}</span></div>
+      <div class="wstat">Difficulty <span style="color:${e.col}">${e.diff}</span></div>
+      <div class="wstat">Reward <span style="color:var(--a)">$${fmtN(e.reward)}</span></div>
+      <div class="wstat">Win Chance <span style="color:${e.winChance>=50?'var(--g)':'var(--r)'}">${e.winChance}%</span></div>
+    </div>
+    <button class="btn br" onclick="engageWar(${i})">⚔ ATTACK</button>
+  </div>`).join('')+
+    `<button class="btn bm" style="margin-top:4px" onclick="renderWar(true)">Find New Targets</button>`;
+  el.innerHTML=html;
+}
+function genEnemies(wp){return ENEMY_TIERS.map(t=>{const power=Math.max(10,Math.floor(wp*t.pm*(0.8+Math.random()*0.4)));const reward=Math.floor(ips()*55*t.rm*(0.85+Math.random()*0.3));const winChance=Math.min(95,Math.max(5,Math.round(wp/(wp+power)*100)));const name=ENEMY_NAMES[Math.floor(Math.random()*ENEMY_NAMES.length)];return{...t,power,reward,winChance,name};});}
+// ═══ RENDER — ACTION ═══
+const ACTION_DEFS=[
+  {id:'radar',title:'RADAR INTERCEPT',icon:'◎',desc:'Rotating radar screen. Click red blips before they reach the center. 30 seconds.',controls:'TAP/CLICK blips',dur:30,fn:'startRadarGame'},
+  {id:'bombing',title:'BOMBING RUN',icon:'★',desc:'Guide your aircraft with your mouse. Click/tap to drop bombs on highlighted targets. 25 seconds.',controls:'MOUSE/TOUCH = move · TAP = drop bomb',dur:25,fn:'startBombingGame'},
+  {id:'combat',title:'AIR COMBAT',icon:'▶',desc:'WASD/arrows to move your fighter. Auto-fires at nearest enemy. Destroy all hostiles. 40 seconds.',controls:'WASD or ARROWS to move',dur:40,fn:'startCombatGame'},
+];
+function renderAction(){
+  const el=document.getElementById('view-action');
+  const fleetBonus=Math.max(1,Math.floor(fleet()/5+1));
+  el.innerHTML=`<div class="sh">Action Ops <span>Fleet bonus \xd7${fleetBonus}</span></div>`+
+    ACTION_DEFS.map(a=>{
+      const cd=S.actionCD[a.id]||0;const now=Date.now();const cooling=cd>now;const rem=Math.max(0,Math.ceil((cd-now)/1000));
+      const best=S.actionBest[a.id]||0;
+      return`<div class="actcard${cooling?' cooling':''}">
+        <div class="actitle">${a.icon} ${a.title}${cooling?`<span class="bdg bdg-b">CD ${rem}s</span>`:'<span class="bdg bdg-g">READY</span>'}</div>
+        <div class="acdesc">${a.desc}</div>
+        <div class="acinfo">
+          <span>Controls: <b>${a.controls}</b></span>
+          <span>Duration: <b>${a.dur}s</b></span>
+          <span>Fleet Bonus: <b>\xd7${fleetBonus}</b></span>
+          <span>Best Score: <b>${best>0?fmtN(best):'--'}</b></span>
+        </div>
+        ${cooling
+          ?`<div class="pw"><div class="pf b" style="width:${Math.max(0,Math.min(100,(1-(cd-now)/(90000))*100)).toFixed(1)}%"></div></div>`
+          :`<button class="btn bc2" onclick="${a.fn}()">▶ LAUNCH ${a.title}</button>`}
+      </div>`;
+    }).join('');
+}
+
+// ═══ MINI-GAMES ═══
+function closeMinigame(){const m=document.getElementById('mg-modal');if(m)m.remove();if(window._mgRAF)cancelAnimationFrame(window._mgRAF);window._mgRAF=null;}
+
+// --- RADAR INTERCEPT ---
+function startRadarGame(){
+  const fleetBonus=Math.max(1,Math.floor(fleet()/5+1));
+  const modal=document.createElement('div');modal.id='mg-modal';modal.className='mgmodal';
+  modal.innerHTML=`<div class="mgbox"><div class="mgtitle">◎ RADAR INTERCEPT</div><div class="mgsub">TAP RED BLIPS BEFORE THEY REACH CENTER</div><div class="mghud"><span>SCORE <b id="mg-score">0</b></span><span>TIME <b id="mg-timer">30</b>s</span><span>HITS <b id="mg-hits">0</b></span></div><canvas id="mg-canvas" width="300" height="300"></canvas><button class="btn bm" style="margin-top:8px" onclick="closeMinigame()">ABORT</button></div>`;
+  document.body.appendChild(modal);
+  const canvas=document.getElementById('mg-canvas');const ctx=canvas.getContext('2d');
+  let blips=[],score=0,hits=0,timeLeft=30,sweepAngle=0,gameOver=false,lastSpawn=0,lastTime=Date.now();
+  function spawnBlip(){const angle=Math.random()*Math.PI*2;blips.push({x:150+Math.cos(angle)*138,y:150+Math.sin(angle)*138,vx:-Math.cos(angle)*1.1,vy:-Math.sin(angle)*1.1,r:8,age:0});}
+  function handleHit(mx,my){if(gameOver)return;for(let i=blips.length-1;i>=0;i--){const b=blips[i];if(Math.hypot(mx-b.x,my-b.y)<40){blips.splice(i,1);hits++;score+=2000;const se=document.getElementById('mg-score');const he=document.getElementById('mg-hits');if(se)se.textContent=score;if(he)he.textContent=hits;break;}}}
+  canvas.addEventListener('click',function(e){const r=canvas.getBoundingClientRect();const scaleX=300/r.width;const scaleY=300/r.height;handleHit((e.clientX-r.left)*scaleX,(e.clientY-r.top)*scaleY);});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();const r=canvas.getBoundingClientRect();const scaleX=300/r.width;const scaleY=300/r.height;const t=e.touches[0];handleHit((t.clientX-r.left)*scaleX,(t.clientY-r.top)*scaleY);},{passive:false});
+  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['radar']||0)<score)S.actionBest['radar']=score;S.actionCD['radar']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">MISSION COMPLETE</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=(now-lastTime)/1000;lastTime=now;sweepAngle+=dt*1.5;if(now-lastSpawn>1600&&blips.length<10){spawnBlip();lastSpawn=now;}for(let i=blips.length-1;i>=0;i--){blips[i].x+=blips[i].vx;blips[i].y+=blips[i].vy;blips[i].age++;if(Math.hypot(blips[i].x-150,blips[i].y-150)<28)blips.splice(i,1);}ctx.fillStyle='#060e14';ctx.fillRect(0,0,300,300);ctx.strokeStyle='#00e87a22';ctx.lineWidth=1;for(let r=35;r<=140;r+=35){ctx.beginPath();ctx.arc(150,150,r,0,Math.PI*2);ctx.stroke();}ctx.strokeStyle='#00e87a15';ctx.beginPath();ctx.moveTo(10,150);ctx.lineTo(290,150);ctx.moveTo(150,10);ctx.lineTo(150,290);ctx.stroke();ctx.save();ctx.translate(150,150);ctx.rotate(sweepAngle);const grad=ctx.createLinearGradient(0,0,140,0);grad.addColorStop(0,'rgba(0,232,122,0.55)');grad.addColorStop(1,'rgba(0,232,122,0)');ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,140,-0.45,0.45);ctx.closePath();ctx.fill();ctx.restore();blips.forEach(b=>{const pulse=Math.sin(b.age*0.25)*0.5+0.5;ctx.fillStyle=`rgba(255,71,87,${0.7+pulse*0.3})`;ctx.shadowBlur=8;ctx.shadowColor='#ff4757';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;});ctx.fillStyle='#00e87a';ctx.beginPath();ctx.arc(150,150,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#00e87a44';ctx.lineWidth=2;ctx.beginPath();ctx.arc(150,150,28,0,Math.PI*2);ctx.stroke();if(!gameOver)window._mgRAF=requestAnimationFrame(draw);}
+  window._mgRAF=requestAnimationFrame(draw);
+}
+
+// --- BOMBING RUN ---
+function startBombingGame(){
+  const fleetBonus=Math.max(1,Math.floor(fleet()/5+1));
+  const modal=document.createElement('div');modal.id='mg-modal';modal.className='mgmodal';
+  modal.innerHTML=`<div class="mgbox"><div class="mgtitle">★ BOMBING RUN</div><div class="mgsub">MOVE MOUSE/TOUCH · CLICK TO DROP BOMB</div><div class="mghud"><span>SCORE <b id="mg-score">0</b></span><span>TIME <b id="mg-timer">25</b>s</span><span>HITS <b id="mg-hits">0</b></span></div><canvas id="mg-canvas" width="280" height="380"></canvas><button class="btn bm" style="margin-top:8px" onclick="closeMinigame()">ABORT</button></div>`;
+  document.body.appendChild(modal);
+  const canvas=document.getElementById('mg-canvas');const ctx=canvas.getContext('2d');
+  let acX=140,targets=[],bombs=[],score=0,hits=0,timeLeft=25,gameOver=false,scrollY=0,lastTime=Date.now();
+  function spawnTarget(){targets.push({x:20+Math.random()*220,y:-30,w:45,h:28,age:0});}
+  function getPos(e,canvas){const r=canvas.getBoundingClientRect();const scaleX=280/r.width;const scaleY=380/r.height;return{x:(e.clientX-r.left)*scaleX,y:(e.clientY-r.top)*scaleY};}
+  canvas.addEventListener('mousemove',function(e){const p=getPos(e,canvas);acX=Math.max(20,Math.min(260,p.x));});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();const p=getPos({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY},canvas);acX=Math.max(20,Math.min(260,p.x));},{passive:false});
+  function dropBomb(){if(gameOver)return;bombs.push({x:acX,y:30,vy:4,explode:0});}
+  canvas.addEventListener('click',dropBomb);
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();dropBomb();},{passive:false});
+  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['bombing']||0)<score)S.actionBest['bombing']=score;S.actionCD['bombing']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">BOMBS AWAY</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  spawnTarget();spawnTarget();
+  function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=(now-lastTime)/16;lastTime=now;scrollY=(scrollY+1.5*dt)%380;
+  if(Math.random()<0.02*dt&&targets.length<6)spawnTarget();
+  // update targets
+  for(let i=targets.length-1;i>=0;i--){targets[i].y+=1.2*dt;targets[i].age++;if(targets[i].y>410)targets.splice(i,1);}
+  // update bombs
+  for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];if(b.explode>0){b.explode+=dt;if(b.explode>15)bombs.splice(i,1);}else{b.y+=b.vy*dt;if(b.y>380){b.explode=1;}else{for(let j=targets.length-1;j>=0;j--){const t=targets[j];if(b.x>t.x&&b.x<t.x+t.w&&b.y>t.y&&b.y<t.y+t.h){b.explode=1;targets.splice(j,1);hits++;score+=3000;const se=document.getElementById('mg-score');const he=document.getElementById('mg-hits');if(se)se.textContent=score;if(he)he.textContent=hits;}}}}}
+  // draw terrain
+  ctx.fillStyle='#1a2810';ctx.fillRect(0,0,280,380);
+  for(let y=-380+scrollY;y<380;y+=380){ctx.fillStyle='#223318';ctx.fillRect(0,y,280,190);for(let i=0;i<8;i++){ctx.fillStyle=i%2?'#2a3d1a':'#1e3015';ctx.fillRect(i*35,y,35,190);}}
+  // draw targets
+  targets.forEach(t=>{ctx.fillStyle='rgba(255,71,87,0.85)';ctx.fillRect(t.x,t.y,t.w,t.h);ctx.strokeStyle='#ff4757';ctx.lineWidth=1;ctx.strokeRect(t.x,t.y,t.w,t.h);ctx.fillStyle='rgba(255,71,87,0.3)';ctx.fillRect(t.x+3,t.y+3,t.w-6,t.h-6);});
+  // draw bombs
+  bombs.forEach(b=>{if(b.explode>0){ctx.fillStyle=`rgba(255,150,50,${0.8-b.explode/15})`;ctx.beginPath();ctx.arc(b.x,b.y,b.explode*3,0,Math.PI*2);ctx.fill();}else{ctx.fillStyle='#f5a623';ctx.beginPath();ctx.arc(b.x,b.y,5,0,Math.PI*2);ctx.fill();}});
+  // draw aircraft
+  ctx.fillStyle='#00d2ff';ctx.beginPath();ctx.moveTo(acX,25);ctx.lineTo(acX-14,35);ctx.lineTo(acX+14,35);ctx.closePath();ctx.fill();ctx.fillStyle='#1e90ff';ctx.beginPath();ctx.moveTo(acX-8,32);ctx.lineTo(acX-22,40);ctx.lineTo(acX-8,38);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(acX+8,32);ctx.lineTo(acX+22,40);ctx.lineTo(acX+8,38);ctx.closePath();ctx.fill();
+  if(!gameOver)window._mgRAF=requestAnimationFrame(draw);}
+  window._mgRAF=requestAnimationFrame(draw);
+}
+
+// --- AIR COMBAT ---
+function startCombatGame(){
+  const fleetBonus=Math.max(1,Math.floor(fleet()/5+1));
+  const modal=document.createElement('div');modal.id='mg-modal';modal.className='mgmodal';
+  modal.innerHTML=`<div class="mgbox"><div class="mgtitle">▶ AIR COMBAT</div><div class="mgsub">WASD/ARROWS = MOVE · AUTO-FIRE</div><div class="mghud"><span>SCORE <b id="mg-score">0</b></span><span>TIME <b id="mg-timer">40</b>s</span><span>KILLS <b id="mg-hits">0</b></span></div><canvas id="mg-canvas" width="300" height="300"></canvas><button class="btn bm" style="margin-top:8px" onclick="closeMinigame()">ABORT</button></div>`;
+  document.body.appendChild(modal);
+  const canvas=document.getElementById('mg-canvas');const ctx=canvas.getContext('2d');
+  let px=150,py=220,pvx=0,pvy=0,bullets=[],enemies=[],score=0,kills=0,timeLeft=40,gameOver=false,lastTime=Date.now(),lastFire=0,lastSpawn=0;
+  const keys={};
+  function onKey(e,down){keys[e.key]=down;keys[e.code]=down;}
+  window.addEventListener('keydown',e=>onKey(e,true));window.addEventListener('keyup',e=>onKey(e,false));
+  function spawnEnemy(){const side=Math.floor(Math.random()*4);let ex,ey;if(side===0){ex=Math.random()*280+10;ey=-15;}else if(side===1){ex=315;ey=Math.random()*280+10;}else if(side===2){ex=Math.random()*280+10;ey=315;}else{ex=-15;ey=Math.random()*280+10;}const angle=Math.atan2(py-ey,px-ex);const spd=1+Math.random()*1.2;enemies.push({x:ex,y:ey,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,hp:2});}
+  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);window.removeEventListener('keydown',e=>onKey(e,true));window.removeEventListener('keyup',e=>onKey(e,false));const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['combat']||0)<score)S.actionBest['combat']=score;S.actionCD['combat']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">ENGAGED</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=Math.min((now-lastTime)/16,3);lastTime=now;
+  // move player
+  const spd=2.5;if(keys['ArrowLeft']||keys['KeyA']||keys['a'])pvx=-spd;else if(keys['ArrowRight']||keys['KeyD']||keys['d'])pvx=spd;else pvx*=0.8;
+  if(keys['ArrowUp']||keys['KeyW']||keys['w'])pvy=-spd;else if(keys['ArrowDown']||keys['KeyS']||keys['s'])pvy=spd;else pvy*=0.8;
+  px=Math.max(10,Math.min(290,px+pvx*dt));py=Math.max(10,Math.min(290,py+pvy*dt));
+  // auto-fire toward nearest enemy
+  if(now-lastFire>350&&enemies.length>0){let nearest=null,nd=Infinity;enemies.forEach(e=>{const d=Math.hypot(e.x-px,e.y-py);if(d<nd){nd=d;nearest=e;}});if(nearest){const ang=Math.atan2(nearest.y-py,nearest.x-px);const spd2=7;bullets.push({x:px,y:py,vx:Math.cos(ang)*spd2,vy:Math.sin(ang)*spd2});lastFire=now;}}
+  // spawn enemies
+  if(now-lastSpawn>1500&&enemies.length<8){spawnEnemy();lastSpawn=now;}
+  // update
+  for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<-10||b.x>310||b.y<-10||b.y>310)bullets.splice(i,1);}
+  for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];const angle=Math.atan2(py-e.y,px-e.x);e.vx=e.vx*0.97+Math.cos(angle)*0.05;e.vy=e.vy*0.97+Math.sin(angle)*0.05;e.x+=e.vx*dt;e.y+=e.vy*dt;
+  for(let j=bullets.length-1;j>=0;j--){const b=bullets[j];if(Math.hypot(b.x-e.x,b.y-e.y)<12){e.hp--;bullets.splice(j,1);if(e.hp<=0){enemies.splice(i,1);kills++;score+=1500;const se=document.getElementById('mg-score');const ke=document.getElementById('mg-hits');if(se)se.textContent=score;if(ke)ke.textContent=kills;}break;}}}
+  // draw
+  ctx.fillStyle='#030810';ctx.fillRect(0,0,300,300);
+  for(let s=0;s<20;s++){ctx.fillStyle=`rgba(255,255,255,${0.2+Math.sin(s*77)*0.15})`;ctx.beginPath();ctx.arc((s*73+100)%300,(s*53+50)%300,0.8,0,Math.PI*2);ctx.fill();}
+  enemies.forEach(e=>{ctx.fillStyle='#ff4757';ctx.save();ctx.translate(e.x,e.y);const ang=Math.atan2(py-e.y,px-e.x);ctx.rotate(ang);ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-8,7);ctx.lineTo(-8,-7);ctx.closePath();ctx.fill();ctx.restore();});
+  bullets.forEach(b=>{ctx.fillStyle='#f5a623';ctx.shadowBlur=4;ctx.shadowColor='#f5a623';ctx.beginPath();ctx.arc(b.x,b.y,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;});
+  ctx.fillStyle='#00d2ff';ctx.save();ctx.translate(px,py);const pa=Math.atan2(pvy,pvx||0.001);ctx.rotate(pa);ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-10,9);ctx.lineTo(-6,0);ctx.lineTo(-10,-9);ctx.closePath();ctx.fill();ctx.restore();
+  if(!gameOver)window._mgRAF=requestAnimationFrame(draw);}
+  window._mgRAF=requestAnimationFrame(draw);
+}
+
+// ═══ PRESTIGE (3-tier) ═══
+function showPrestige(){
+  const totalE=S.totalEarned;
+  const stars=Math.floor(Math.log10(Math.max(10,totalE)));
+  const starMult=1+stars*0.5;
+  const medals=Math.floor(stars/5);
+  const medalMult=1+(medals*2);
+  const ribbons=Math.floor((S.medals||0)/3);
+  const ribbonMult=1+(ribbons*5);
+  const canStar=stars>S.prestigeStars&&totalE>=100000;
+  const canMedal=(S.prestigeStars>=5)&&medals>(S.medals||0)&&totalE>=5000000;
+  const canRibbon=(S.medals||0)>=3&&ribbons>(S.ribbons||0)&&totalE>=500000000;
+  const el=document.createElement('div');el.className='pmodal';
+  el.innerHTML=`<div class="pmbox">
+    <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--p);letter-spacing:3px;margin-bottom:6px">PRESTIGE SYSTEM</div>
+    <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Reset for Power</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Each tier resets more — each tier rewards more.</div>
+    <div class="omrow"><span class="k">Total Earned</span><span class="v">$${fmtN(totalE)}</span></div>
+    <div class="omrow"><span class="k">Stars / Medals / Ribbons</span><span class="v">★${S.prestigeStars} / 🎖${S.medals||0} / 🎗${S.ribbons||0}</span></div>
+    <div class="ptier${canStar?' avail':''}" style="margin-top:12px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--p);margin-bottom:6px">★ TIER 1 — COMBAT STARS</div>
+      <div class="omrow"><span class="k">New Stars</span><span class="v">★${stars}</span></div>
+      <div class="omrow"><span class="k">Income Mult</span><span class="v">${starMult.toFixed(1)}×</span></div>
+      <div class="omrow"><span class="k">Resets</span><span class="v" style="color:var(--muted)">Fleet, Credits, Missions</span></div>
+      <div class="omrow"><span class="k">Keeps</span><span class="v" style="color:var(--muted)">Buildings, Upgrades, Stars</span></div>
+      <div class="omrow"><span class="k">Requirement</span><span class="v" style="color:${canStar?'var(--g)':'var(--r)'}">$100K earned, ${stars}>★${S.prestigeStars}</span></div>
+      ${canStar?`<button class="btn bp" onclick="doPrestige(${stars},${starMult})">★ Prestige Now</button>`:
+        `<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px">Need $${fmtN(Math.max(100000,Math.pow(10,S.prestigeStars+1)))} total</div>`}
+    </div>
+    <div class="ptier${canMedal?' avail':''}" style="margin-top:8px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--a);margin-bottom:6px">🎖 TIER 2 — MEDALS</div>
+      <div class="omrow"><span class="k">Medals Earned</span><span class="v" style="color:var(--a)">🎖${medals} (have ${S.medals||0})</span></div>
+      <div class="omrow"><span class="k">Per Medal Bonus</span><span class="v">+2× ALL income</span></div>
+      <div class="omrow"><span class="k">Resets</span><span class="v" style="color:var(--muted)">Everything + Stars</span></div>
+      <div class="omrow"><span class="k">Keeps</span><span class="v" style="color:var(--muted)">Medals, Ribbons</span></div>
+      <div class="omrow"><span class="k">Unlocks</span><span class="v" style="color:var(--a)">Commander System</span></div>
+      <div class="omrow"><span class="k">Requirement</span><span class="v" style="color:${canMedal?'var(--g)':'var(--r)'}">★5 stars, $5M earned</span></div>
+      ${canMedal?`<button class="btn ba" onclick="doMedalPrestige(${medals})">🎖 Medal Prestige</button>`:
+        `<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px">Requires ★5 stars + $5M total</div>`}
+    </div>
+    <div class="ptier${canRibbon?' avail':''}" style="margin-top:8px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--c);margin-bottom:6px">🎗 TIER 3 — RIBBONS</div>
+      <div class="omrow"><span class="k">Ribbons Earned</span><span class="v" style="color:var(--c)">🎗${ribbons} (have ${S.ribbons||0})</span></div>
+      <div class="omrow"><span class="k">Per Ribbon Bonus</span><span class="v">+5× ALL income</span></div>
+      <div class="omrow"><span class="k">Resets</span><span class="v" style="color:var(--muted)">Everything except Ribbons</span></div>
+      <div class="omrow"><span class="k">Requirement</span><span class="v" style="color:${canRibbon?'var(--g)':'var(--r)'}">🎖3 medals, $500M total</span></div>
+      ${canRibbon?`<button class="btn bc2" onclick="doRibbonPrestige(${ribbons})">🎗 Ribbon Prestige</button>`:
+        `<div style="font-size:11px;color:var(--muted);text-align:center;padding:6px">Requires 🎖3 medals + $500M total</div>`}
+    </div>
+    <button class="btn bm" style="margin-top:12px" onclick="this.closest('.pmodal').remove()">Close</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+function doPrestige(stars,mult){
+  if(!confirm(`Prestige to ★${stars} (${mult}× income)? Resets fleet & credits.`))return;
+  const kept={buildings:S.buildings,upgLvl:S.upgLvl,cmdLvl:S.cmdLvl,
+    prestigeStars:stars,prestigeMult:mult,medals:S.medals||0,ribbons:S.ribbons||0,
+    theatreWins:S.theatreWins,achievements:S.achievements,
+    totalEarned:S.totalEarned,warsWon:S.warsWon,warsFought:S.warsFought,missionsComplete:S.missionsComplete};
+  S=Object.assign(defState(),kept);saveGame();
+  document.querySelector('.pmodal')?.remove();
+  toast(`★ Prestige ${stars}! ${mult}×income active`,'var(--p)');
+  updateHUD();if(S.prestigeStars>0){document.getElementById('medal-pill').style.display='flex';}
+  refreshAll();
+}
+function doMedalPrestige(medals){
+  if(!confirm(`Medal Prestige to 🎖${medals}? Resets fleet, credits, buildings, upgrades, and stars.`))return;
+  const kept={medals,ribbons:S.ribbons||0,theatreWins:S.theatreWins,achievements:S.achievements,
+    totalEarned:S.totalEarned,warsWon:S.warsWon,warsFought:S.warsFought,missionsComplete:S.missionsComplete};
+  S=Object.assign(defState(),kept);S.medals=medals;saveGame();
+  document.querySelector('.pmodal')?.remove();
+  toast(`🎖 Medal ${medals}! +${medals*2}× income!`,'var(--a)');
+  updateHUD();document.getElementById('medal-pill').style.display='flex';
+  refreshAll();
+}
+function doRibbonPrestige(ribbons){
+  if(!confirm(`Ribbon Prestige to 🎗${ribbons}? Resets EVERYTHING except ribbons.`))return;
+  const kept={ribbons,achievements:S.achievements,totalEarned:S.totalEarned,warsWon:S.warsWon,warsFought:S.warsFought,missionsComplete:S.missionsComplete};
+  S=Object.assign(defState(),kept);S.ribbons=ribbons;saveGame();
+  document.querySelector('.pmodal')?.remove();
+  toast(`🎗 Ribbon ${ribbons}! +${ribbons*5}× income!`,'var(--c)');updateHUD();refreshAll();
+}
+// ═══ ACTIONS ═══
+function buyAC(id){
+  const ac=ACD.find(a=>a.id===id);if(!ac)return;
+  const qty=(S.upgLvl['multi_buy']>0)?10:1;
+  let cost=0;for(let i=0;i<qty;i++)cost+=ac.cost*Math.pow(ac.cg,(S.owned[id]||0)+i);cost=Math.floor(cost);
+  if((ac.id==='b2'||ac.id==='b21')&&(S.cmdLvl['phantom']||0)>0)cost=Math.floor(cost*stealthDiscount());
+  if(S.credits<cost)return;
+  S.credits-=cost;S.owned[id]=(S.owned[id]||0)+qty;
+  toast(`${ac.name.split(' ')[0]} \xd7${qty} deployed`,'var(--g)');
+  updatePlanes();setTimeout(function(){triggerTakeoff(id);},200);
+  checkAchievements();refreshAll();
+}
+function launch(id){
+  const md=MID.find(x=>x.id===id);if(!md)return;
+  const ms=S.missions[id];if(ms.active||(S.owned[md.ac]||0)===0)return;
+  const dur=Math.max(3,md.dur*calcMods().speed);
+  ms.active=true;ms.progress=0;ms.endTime=Date.now()+dur*1000;
+  renderMissions();
+}
+function buyUpg(id){
+  const u=UPG.find(x=>x.id===id);if(!u)return;
+  const lvl=S.upgLvl[id]||0;if(lvl>=u.maxL)return;
+  const cost=upgCost(u,lvl);if(S.credits<cost)return;
+  S.credits-=cost;S.upgLvl[id]=lvl+1;
+  toast(`${u.name} Lv${lvl+1}`,'var(--a)');refreshAll();
+}
+function build(id){
+  const b=BLDG.find(x=>x.id===id);if(!b||S.buildings[id])return;
+  if(b.req&&!S.buildings[b.req]){toast('Missing prerequisite','var(--r)');return;}
+  if(S.credits<b.cost)return;
+  S.credits-=b.cost;S.buildings[id]=true;
+  toast(`${b.name} constructed!`,'var(--g)');refreshAll();
+}
+function hireCommander(id){
+  const c=COMMANDERS.find(x=>x.id===id);if(!c)return;
+  const lvl=S.cmdLvl[id]||0;if(lvl>=c.maxL)return;
+  const cost=c.cost*(lvl+1);if(S.prestigeStars<cost){toast('Not enough Stars','var(--r)');return;}
+  S.prestigeStars-=cost;S.cmdLvl[id]=lvl+1;S.prestigeMult=1+S.prestigeStars*0.5;
+  toast(`${c.name} ${lvl===0?'hired':'promoted'} Lv${lvl+1}`,'var(--a)');checkAchievements();refreshAll();
+}
+function engageWar(idx){
+  const e=warEnemies[idx];if(!e)return;
+  S.warsFought++;const won=Math.random()*100<e.winChance;
+  const warRewMult=1+(S.cmdLvl['hawk']||0)*0.4;
+  const reward=Math.floor(e.reward*warRewMult);
+  if(won){S.credits+=reward;S.warsWon++;S.totalEarned+=reward;}
+  const owned=ACD.filter(a=>(S.owned[a.id]||0)>0);
+  const log=owned.map(ac=>won?`<div class="wl-w">✓ ${ac.name.split(' ')[0]} \xd7${S.owned[ac.id]} — success</div>`:`<div class="wl-l">✗ ${ac.name.split(' ')[0]} — failed</div>`).join('');
+  document.getElementById('view-war').innerHTML=`<div class="wres"><div class="wrt" style="color:${won?'var(--g)':'var(--r)'}">${won?'VICTORY':'DEFEAT'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">vs ${e.name}</div>${won?`<div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--a);margin:6px 0">+$${fmtN(reward)}</div>`:`<div style="font-size:12px;color:var(--muted)">Build a stronger fleet.</div>`}<div class="wlog">${log}</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="card hi" style="text-align:center"><div style="font-size:10px;color:var(--muted)">Wars Won</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">${S.warsWon}</div></div><div class="card hi" style="text-align:center"><div style="font-size:10px;color:var(--muted)">Win Rate</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--a)">${S.warsFought>0?Math.round(S.warsWon/S.warsFought*100):0}%</div></div></div><button class="btn br" style="margin-top:8px" onclick="renderWar(true)">Find New Targets</button>`;
+  checkAchievements();updateHUD();
+}
+function engageTheatre(theatreId,battleIdx){
+  const th=THEATRES.find(t=>t.id===theatreId);if(!th)return;
+  const battle=th.battles[battleIdx];if(!battle)return;
+  const wins=S.theatreWins[theatreId]||0;if(wins!==battleIdx)return;
+  const wp=warPower();const enemyPower=Math.floor(wp*battle.pm*(0.85+Math.random()*0.3));
+  const winChance=Math.min(95,Math.max(5,Math.round(wp/(wp+enemyPower)*100)));
+  const won=Math.random()*100<winChance;
+  const warRewMult=1+(S.cmdLvl['hawk']||0)*0.4;
+  const reward=Math.floor(battle.base*warRewMult);
+  if(won){S.theatreWins[theatreId]=(wins||0)+1;S.credits+=reward;S.totalEarned+=reward;S.warsWon++;
+    toast(`✓ ${battle.name} — +$${fmtN(reward)}`,'var(--g)');
+    if(S.theatreWins[theatreId]>=5){toast(`★ ${th.name} CONQUERED! ${th.bonus}`,'var(--a)');}
+  }else{toast(`✗ ${battle.name} — Defeat. Build more power.`,'var(--r)');}
+  S.warsFought++;checkAchievements();refreshAll();
+}
+// ═══ ACHIEVEMENTS ═══
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(S.achievements[a.id])return;
+    try{if(a.check()){S.achievements[a.id]=true;toast(`${a.icon} ${a.name}: ${a.desc}`,'#f5d623');}}catch(e){}
+  });
+}
+// ═══ EMERGENCY EVENTS ═══
+const EVENT_TYPES=[
+  {type:'fuel',  text:'🚨 FUEL DEPOT SECURED — Double income for 3 min!',dur:180000,btnTxt:'ACTIVATE'},
+  {type:'intel', text:'📡 INTEL INTERCEPT — Mission rewards ×5 for 2 min!',dur:120000,btnTxt:'EXPLOIT'},
+  {type:'war',   text:'💥 AIR SUPERIORITY — War rewards doubled for 2 min!',dur:120000,btnTxt:'ATTACK'},
+  {type:'drop',  text:'🎁 SUPPLY DROP — Free $',dur:0,btnTxt:'CLAIM'},
+];
+let nextEvent=Date.now()+(180000+Math.random()*120000);
+function checkEvent(){
+  if(Date.now()<nextEvent)return;
+  if(S.eventActive&&S.eventActive.endTime>Date.now())return;
+  const t=EVENT_TYPES[Math.floor(Math.random()*EVENT_TYPES.length)];
+  if(t.type==='drop'){
+    const amt=Math.floor(ips()*120);S.credits+=amt;S.totalEarned+=amt;
+    toast(`🎁 Supply Drop! +$${fmtN(amt)} credits`,'var(--a)');nextEvent=Date.now()+(180000+Math.random()*120000);return;
+  }
+  S.eventActive={type:t.type,endTime:Date.now()+t.dur};
+  const banner=document.getElementById('evtbanner');const card=document.getElementById('evtcard');
+  if(banner&&card){banner.style.display='block';card.innerHTML=`<div class="evttext">${t.text}<br><span style="font-size:9px;color:var(--muted)" id="evt-rem">${t.dur/1000}s remaining</span></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="btn bg" style="margin:0;padding:6px 12px;font-size:11px" onclick="dismissEvent()">${t.btnTxt}</button><button class="btn bm" style="margin:0;padding:6px 8px;font-size:11px" onclick="dismissEvent()">×</button></div>`;}
+  nextEvent=Date.now()+(240000+Math.random()*120000);
+  const evtInterval=setInterval(()=>{const rem=Math.max(0,Math.ceil((S.eventActive.endTime-Date.now())/1000));const remEl=document.getElementById('evt-rem');if(remEl)remEl.textContent=`${rem}s remaining`;if(rem<=0){clearInterval(evtInterval);dismissEvent();}},1000);
+}
+function dismissEvent(){const b=document.getElementById('evtbanner');if(b)b.style.display='none';}
+// ═══ AUTO DISPATCH ═══
+function runAuto(){
+  UPG.filter(u=>u.effect==='auto'&&(S.upgLvl[u.id]||0)>0).forEach(u=>{
+    if(!(S.owned[u.ac]||0))return;
+    u.mids.forEach(mid=>{const ms=S.missions[mid];if(!ms||ms.active)return;launch(mid);});
+  });
+}
+// ═══ GAME TICK ═══
+let lastTick=Date.now();
+setInterval(()=>{
+  const now=Date.now(),dt=(now-lastTick)/1000;lastTick=now;
+  const earned=ips()*dt;S.credits+=earned;S.totalEarned+=earned;
+  const m=calcMods();let upd=false;
+  MID.forEach(md=>{
+    const ms=S.missions[md.id];if(!ms.active)return;
+    ms.progress=1-(ms.endTime-now)/(md.dur*m.speed*1000);
+    const pb=document.getElementById('p'+md.id);if(pb)pb.style.width=Math.min(100,ms.progress*100).toFixed(1)+'%';
+    if(now>=ms.endTime){
+      const reward=Math.floor(md.base*m.reward*S.prestigeMult*(1+(S.medals||0)*2)*(1+(S.ribbons||0)*5));
+      ms.active=false;ms.progress=0;S.credits+=reward;S.totalEarned+=reward;S.missionsComplete++;
+      toast(`${md.name} +$${fmtN(reward)}`,'var(--g)');onMissionComplete(md.id);upd=true;
+    }
+  });
+  runAuto();checkEvent();updateHUD();
+  if(upd&&curView==='missions')renderMissions();
+  checkNavDots();
+},200);
+setInterval(()=>{updateSceneHUD();if(curView==='fleet')renderFleet();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='action')renderAction();},1200);
+function checkNavDots(){
+  const fl=fleet();
+  document.getElementById('dot-fleet').classList.toggle('show',ACD.some(a=>fl>=a.unlockF&&!(S.owned[a.id]>0)&&S.credits>=a.cost));
+  document.getElementById('dot-missions').classList.toggle('show',MID.some(md=>S.owned[md.ac]>0&&!S.missions[md.id].active));
+  document.getElementById('dot-base').classList.toggle('show',BLDG.some(b=>!S.buildings[b.id]&&(!b.req||S.buildings[b.req])&&S.credits>=b.cost));
+}
+// ═══ HUD ═══
+function updateHUD(){
+  document.getElementById('hc').textContent='$'+fmtN(S.credits);
+  document.getElementById('hi').textContent='$'+ips().toFixed(1)+'/s';
+  document.getElementById('hf').textContent=fleet();
+  document.getElementById('hp').textContent='★'+S.prestigeStars;
+  const mp=document.getElementById('hm');if(mp)mp.textContent='🎖'+(S.medals||0);
+  if((S.medals||0)>0||S.prestigeStars>=5)document.getElementById('medal-pill').style.display='flex';
+}
+// ═══ SAVE / OFFLINE ═══
+const SAVE_KEY='ironsky_v4';
+function saveGame(){
+  S.savedAt=Date.now();
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}
+  const d=document.getElementById('save-dot');d.classList.add('on');setTimeout(()=>d.classList.remove('on'),800);
+}
+setInterval(saveGame,15000);window.addEventListener('beforeunload',saveGame);
+function applyOffline(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;
+    const d=JSON.parse(raw);const elapsed=Math.min((Date.now()-(d.savedAt||Date.now()))/1000,12*3600);
+    if(elapsed<10)return;
+    const savedIPS=ACD.reduce((s,a)=>s+a.ips*(d.owned?.[a.id]||0),0);
+    const il=d.upgLvl?.['income1']||0;let offMult=1+il*0.20;
+    offMult*=(d.prestigeMult||1);offMult*=(1+(d.medals||0)*2);offMult*=(1+(d.ribbons||0)*5);
+    const foxLvl=(d.cmdLvl?.['fox']||0);offMult*=(1+foxLvl*0.12);
+    const earned=Math.floor(savedIPS*offMult*elapsed);
+    S.credits+=earned;S.totalEarned+=earned;
+    let resolved=0;
+    MID.forEach(md=>{const ms=S.missions[md.id];if(!ms||!ms.active)return;if(Date.now()>=ms.endTime){ms.active=false;ms.progress=0;S.missionsComplete++;resolved++;}});
+    if(earned>0||resolved>0){const hrs=Math.floor(elapsed/3600),mins=Math.floor((elapsed%3600)/60);const timeStr=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;showOfflineModal(timeStr,earned,resolved);}
+  }catch(e){}
+}
+function showOfflineModal(time,earned,missions){
+  const ov=document.createElement('div');ov.className='omodal';
+  ov.innerHTML=`<div class="ombox"><div class="omtitle">DEBRIEFING</div><div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:14px">Welcome Back, Commander</div><div class="omrow"><span class="k">Away for</span><span class="v">${time}</span></div><div class="omrow"><span class="k">Passive Income</span><span class="v">+$${fmtN(earned)}</span></div><div class="omrow"><span class="k">Missions Resolved</span><span class="v">${missions}</span></div><div class="omrow"><span class="k">Max Offline</span><span class="v" style="color:var(--muted)">12 Hours</span></div><button class="btn bg" style="margin-top:14px" onclick="this.closest('.omodal').remove()">Resume Command</button></div>`;
+  document.body.appendChild(ov);
+}
+// ═══ NAV ═══
+let curView='scene';
+document.querySelectorAll('.nb').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    curView=btn.dataset.v;
+    document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+curView).classList.add('active');
+    if(curView==='fleet')renderFleet();else if(curView==='missions')renderMissions();
+    else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();
+    else if(curView==='war')renderWar();else if(curView==='action')renderAction();
+    else if(curView==='scene')resizeSC();
+  });
+});
+// ═══ TOAST ═══
+function toast(msg,col='var(--text)'){
+  const e=document.createElement('div');e.className='tmsg';e.style.cssText=`border-color:${col}33;color:${col}`;e.textContent=msg;
+  const t=document.getElementById('toast');t.appendChild(e);while(t.children.length>4)t.removeChild(t.firstChild);setTimeout(()=>e.remove(),3000);
+}
+// ═══ UTILS ═══
+function fmtN(n){n=Math.floor(n);if(n>=1e15)return(n/1e15).toFixed(2)+'Qa';if(n>=1e12)return(n/1e12).toFixed(2)+'T';if(n>=1e9)return(n/1e9).toFixed(2)+'B';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString();}
+function refreshAll(){updateHUD();updateSceneHUD();updatePlanes();checkNavDots();if(curView==='fleet')renderFleet();else if(curView==='missions')renderMissions();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='war')renderWar();else if(curView==='action')renderAction();}
+// ═══ INIT ═══
+applyOffline();updatePlanes();updateHUD();updateSceneHUD();resizeSC();
+if((S.medals||0)>0||S.prestigeStars>=5)document.getElementById('medal-pill').style.display='flex';
+checkAchievements();
+</script>
+</body>
+</html>
