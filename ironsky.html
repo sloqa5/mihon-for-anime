@@ -253,7 +253,7 @@ const UPG=[
   {id:'speed1',name:'Mission Efficiency',icon:'⏱️',desc:'-10% mission time/level',maxL:30,base:600,grow:2.4,effect:'speed',mult:0.10},
   {id:'reward1',name:'Operational Bonus',icon:'🎖️',desc:'+15% mission rewards/level',maxL:999,base:700,grow:2.4,effect:'reward',mult:0.15},
   {id:'war1',name:'Combat Systems',icon:'⚔️',desc:'+15% war power/level',maxL:999,base:1500,grow:2.5,effect:'war',mult:0.15},
-  {id:'multi_buy',name:'Fleet Procurement',icon:'📦',desc:'Buy 10 aircraft at once (toggle)',maxL:1,base:5000,grow:1,effect:'multibuy'},
+  {id:'multi_buy',name:'Fleet Procurement',icon:'📦',desc:'Permanently buy 10 aircraft per purchase',maxL:1,base:5000,grow:1,effect:'multibuy'},
 ];
 function upgCost(u,lvl){return Math.floor(u.base*Math.pow(u.grow,lvl));}
 // ═══ BUILDINGS ═══
@@ -265,7 +265,7 @@ const BLDG=[
   {id:'radar',name:'AN/FPS-117 RADAR',icon:'📶',desc:'Long-range 3D search radar. 450km range.',effect:'War intel +20% power',cost:18000,req:'tower',effectKey:'war',val:0.20},
   {id:'ops',name:'Wing Operations Ctr',icon:'🏢',desc:'24/7 ops. Automated scheduling.',effect:'Auto-dispatch -25%',cost:25000,req:'radar',effectKey:'speed',val:0.25},
   {id:'ammo',name:'Munitions Storage',icon:'💥',desc:'Collocated Munitions Storage',effect:'+30% war attack power',cost:35000,req:'ops',effectKey:'war',val:0.30},
-  {id:'runway2',name:'Secondary Runway',icon:'🛤️',desc:'Parallel runway — concurrent ops',effect:'+2 mission slots',cost:50000,req:'fuel',effectKey:'slots',val:2},
+  {id:'runway2',name:'Secondary Runway',icon:'🛤️',desc:'Parallel runway — sustained sortie rate',effect:'+25% mission rewards',cost:50000,req:'fuel',effectKey:'reward',val:0.25},
   {id:'e2',name:'Forward HQ',icon:'🏛️',desc:'CAOC forward. Theatre-level C2.',effect:'+50% all income',cost:80000,req:'runway2',effectKey:'income',val:0.50},
   {id:'nuke',name:'Nuclear Storage WS3',icon:'☢️',desc:'Classified nuclear storage.',effect:'+100% war power',cost:150000,req:'ammo',effectKey:'war',val:1.00},
   {id:'satcom',name:'SATCOM Terminal',icon:'🛰️',desc:'MILSTAR/AEHF. Worldwide C2.',effect:'+60% mission rewards',cost:120000,req:'e2',effectKey:'reward',val:0.60},
@@ -378,11 +378,10 @@ function calcMods(){
   // commander bonuses
   COMMANDERS.forEach(c=>{
     const lvl=S.cmdLvl[c.id]||0;if(!lvl)return;
-    if(c.effectKey==='income')income*=(1+c.val*lvl);
+    if(c.effectKey==='income'||c.effectKey==='base')income*=(1+c.val*lvl);
     if(c.effectKey==='speed')speed*=Math.max(0.05,1-c.val*lvl);
     if(c.effectKey==='reward')reward*=(1+c.val*lvl);
-    if(c.effectKey==='war')war*=(1+c.val*lvl);
-    if(c.effectKey==='wRew')war*=(1+c.val*lvl);
+    if(c.effectKey==='war'||c.effectKey==='wRew')war*=(1+c.val*lvl);
   });
   // theatre bonuses
   if((S.theatreWins.desert||0)>=5)income*=1.15;
@@ -403,8 +402,8 @@ function calcMods(){
   return{income,speed,reward,war,slots};
 }
 function eliteBonus(){
-  const lvl=(S.cmdLvl['eagle']||0)+(S.cmdLvl['raptor']||0);
-  return 1+lvl*0.30;
+  // Lt.Col. Eagle: +30%/lvl, Col. Raptor: +50%/lvl — both boost F-22 & F-35 IPS
+  return 1+(S.cmdLvl['eagle']||0)*0.30+(S.cmdLvl['raptor']||0)*0.50;
 }
 function stealthDiscount(){
   const lvl=S.cmdLvl['phantom']||0;
@@ -431,7 +430,7 @@ var resizeSC=function(){};
 // ═══════════════════════════════════════
 // 3-D SCENE (Three.js)
 // ═══════════════════════════════════════
-if(window._threeLoaded&&typeof THREE!=='undefined'){try{
+if(typeof THREE!=='undefined'){window._threeLoaded=true;try{
 const cvs=document.getElementById('scene-canvas');
 const R=new THREE.WebGLRenderer({canvas:cvs,antialias:true});
 R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -573,7 +572,7 @@ let T=0;
 (function anim(){requestAnimationFrame(anim);T+=0.007;PLANES.forEach(function(p,i){if(!p.visible)return;const ud=p.userData;const ang=T*ud.spd+ud.phase;p.position.set(Math.cos(ang)*ud.rad,ud.ht+Math.sin(T*ud.bf)*2.5,Math.sin(ang)*ud.rad);p.rotation.y=-(ang+Math.PI/2);p.rotation.z=Math.sin(T*ud.bf*0.4)*0.08;const gi=1.4+Math.sin(T*3+i)*0.5;p.traverse(function(ch){if(ch.isMesh&&ch.material&&ch.material.emissive&&ch.material.emissiveIntensity>0){ch.material.emissiveIntensity=gi;}});});tickEvents();tickVehicles();towerRadar.rotation.y=T*0.7;radar2.rotation.y=-T*0.5;CAM.position.x=Math.sin(T*0.025)*25;CAM.position.z=100+Math.cos(T*0.02)*18;CAM.lookAt(0,6,0);R.render(SC,CAM);})();
 }catch(_3dErr){console.warn('[IRONSKY] 3D init failed:',_3dErr.message);}
 } // end if(THREE loaded)
-function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(!window._threeLoaded){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D offline — Fleet ▸ Ops ▸ Tech ▸ Build ▸ War</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var chips='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag:orbit · Scroll:zoom · R-drag:pan</div>';if(owned.length){chips+=owned.map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' <b>\xd7'+S.owned[a.id]+'</b></div>';}).join('');}el.innerHTML=chips;}
+function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var chips='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag:orbit · Scroll:zoom · R-drag:pan</div>';if(owned.length){chips+=owned.map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' <b>\xd7'+S.owned[a.id]+'</b></div>';}).join('');}el.innerHTML=chips;}
 
 // ═══ RENDER — FLEET ═══
 function renderFleet(){
@@ -610,7 +609,7 @@ function renderMissions(){
     `<div class="sh">Operations <span>${S.missionsComplete} complete</span></div>`+
     MID.map(md=>{
       const ac=ACD.find(a=>a.id===md.ac);const ms=S.missions[md.id];const owned=S.owned[md.ac]||0;
-      const dur=Math.max(3,Math.round(md.dur*m.speed));const reward=Math.floor(md.base*m.reward*S.prestigeMult*(1+(S.medals||0)*2)*(1+(S.ribbons||0)*5));
+      const dur=Math.max(3,Math.round(md.dur*m.speed));const reward=Math.floor(md.base*m.reward);
       const autoUpg=UPG.find(u=>u.effect==='auto'&&u.ac===md.ac);const isAuto=autoUpg&&(S.upgLvl[autoUpg.id]||0)>0;
       const canLaunch=owned>0&&!ms.active;let timerTxt='';
       if(ms.active){const rem=Math.max(0,Math.ceil((ms.endTime-now)/1000));timerTxt=`${rem}s`;}
@@ -686,20 +685,6 @@ function renderWar(forceNew=false){
       ${conquered?`<div style="font-size:10px;color:var(--g);text-align:center">${th.bonus}</div>`:`<div style="font-size:10px;color:var(--muted)">${wins}/5 battles · ${th.bonus}</div>`}
     </div>`;
   });
-  // add first theatre always if not shown yet
-  if(!(S.theatreWins['desert']>=5)&&(S.theatreWins['desert']||0)===0&&fl>=5){
-    const th=THEATRES[0];const wins=0;const wp2=warPower();
-    html=`<div class="sh">Theatre Operations <span>⚔️${fmtN(wp)}</span></div>
-    <div class="thcard">
-      <div class="thname">${th.icon} ${th.name}</div>
-      <div class="bgrid">${th.battles.map((b,i)=>{
-        const avail=i===0;
-        const wchance=Math.min(95,Math.max(5,Math.round(wp2/(wp2+wp2*b.pm)*100)));
-        return`<div class="bbtn ${avail?'avail':'locked'}" ${avail?`onclick="engageTheatre('${th.id}',${i})"`:''}>${avail?`${wchance}%`:'🔒'}<br><span style="font-size:7px">${b.name.split(' ')[0]}</span></div>`;
-      }).join('')}</div>
-      <div style="font-size:10px;color:var(--muted)">0/5 battles · ${th.bonus}</div>
-    </div>`+html.replace(`<div class="sh">Theatre Operations <span>⚔️${fmtN(wp)}</span></div>`,'');
-  }
   // quick strikes
   html+=`<div class="sh" style="margin-top:12px">Quick Strike <span>Skirmish Mode</span></div>`;
   if(!warEnemies||forceNew)warEnemies=genEnemies(wp);
@@ -747,7 +732,7 @@ function renderAction(){
 }
 
 // ═══ MINI-GAMES ═══
-function closeMinigame(){const m=document.getElementById('mg-modal');if(m)m.remove();if(window._mgRAF)cancelAnimationFrame(window._mgRAF);window._mgRAF=null;}
+function closeMinigame(){const m=document.getElementById('mg-modal');if(m)m.remove();if(window._mgRAF)cancelAnimationFrame(window._mgRAF);window._mgRAF=null;if(window._mgCleanup){window._mgCleanup();window._mgCleanup=null;}}
 
 // --- RADAR INTERCEPT ---
 function startRadarGame(){
@@ -812,9 +797,11 @@ function startCombatGame(){
   let px=150,py=220,pvx=0,pvy=0,bullets=[],enemies=[],score=0,kills=0,timeLeft=40,gameOver=false,lastTime=Date.now(),lastFire=0,lastSpawn=0;
   const keys={};
   function onKey(e,down){keys[e.key]=down;keys[e.code]=down;}
-  window.addEventListener('keydown',e=>onKey(e,true));window.addEventListener('keyup',e=>onKey(e,false));
+  const kd=e=>onKey(e,true),ku=e=>onKey(e,false);
+  window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
+  window._mgCleanup=function(){window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);};
   function spawnEnemy(){const side=Math.floor(Math.random()*4);let ex,ey;if(side===0){ex=Math.random()*280+10;ey=-15;}else if(side===1){ex=315;ey=Math.random()*280+10;}else if(side===2){ex=Math.random()*280+10;ey=315;}else{ex=-15;ey=Math.random()*280+10;}const angle=Math.atan2(py-ey,px-ex);const spd=1+Math.random()*1.2;enemies.push({x:ex,y:ey,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,hp:2});}
-  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);window.removeEventListener('keydown',e=>onKey(e,true));window.removeEventListener('keyup',e=>onKey(e,false));const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['combat']||0)<score)S.actionBest['combat']=score;S.actionCD['combat']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">ENGAGED</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window._mgCleanup=null;const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['combat']||0)<score)S.actionBest['combat']=score;S.actionCD['combat']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">ENGAGED</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
   function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=Math.min((now-lastTime)/16,3);lastTime=now;
   // move player
   const spd=2.5;if(keys['ArrowLeft']||keys['KeyA']||keys['a'])pvx=-spd;else if(keys['ArrowRight']||keys['KeyD']||keys['d'])pvx=spd;else pvx*=0.8;
@@ -1034,7 +1021,7 @@ setInterval(()=>{
     ms.progress=1-(ms.endTime-now)/(md.dur*m.speed*1000);
     const pb=document.getElementById('p'+md.id);if(pb)pb.style.width=Math.min(100,ms.progress*100).toFixed(1)+'%';
     if(now>=ms.endTime){
-      const reward=Math.floor(md.base*m.reward*S.prestigeMult*(1+(S.medals||0)*2)*(1+(S.ribbons||0)*5));
+      const reward=Math.floor(md.base*m.reward);
       ms.active=false;ms.progress=0;S.credits+=reward;S.totalEarned+=reward;S.missionsComplete++;
       toast(`${md.name} +$${fmtN(reward)}`,'var(--g)');onMissionComplete(md.id);upd=true;
     }
