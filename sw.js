@@ -1,11 +1,10 @@
-const CACHE = 'ironsky-v7';
+const CACHE = 'ironsky-v8';
 const PRECACHE = [
   '/mihon-for-anime/',
   '/mihon-for-anime/index.html',
   '/mihon-for-anime/manifest.json',
   '/mihon-for-anime/icons/icon-192.png',
   '/mihon-for-anime/icons/icon-512.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
   'https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap'
 ];
 
