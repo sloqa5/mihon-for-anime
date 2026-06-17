@@ -395,10 +395,8 @@ function calcMods(){
   if((S.theatreWins.pacific||0)>=5){income*=1.15;war*=1.25;}
   if((S.theatreWins.arctic||0)>=5){income*=1.50;reward*=1.50;}
   // event bonus
-  if(S.eventActive&&S.eventActive.endTime>Date.now()){
-    if(S.eventActive.type==='fuel')income*=2;
-    if(S.eventActive.type==='intel')reward*=5;
-    if(S.eventActive.type==='war')war*=2;
+  if(S.eventActive&&S.eventActive.endTime>Date.now()){const et=S.eventActive.type;
+    if(et==='fuel')income*=2;else if(et==='intel')reward*=5;else if(et==='war')war*=2;else if(et==='nato')income*=3;else if(et==='surge')speed*=0.2;
   }
   // prestige multipliers
   income*=S.prestigeMult;reward*=S.prestigeMult;
@@ -433,6 +431,13 @@ var updatePlanes=function(){};
 var triggerTakeoff=function(){};
 var onMissionComplete=function(){};
 var resizeSC=function(){};
+var buyMode=1;
+function toggleBuyMode(){buyMode=buyMode===1?10:buyMode===10?'max':1;if(curView==='fleet')renderFleet();}
+function calcBuyQty(ac,cnt){
+  if(buyMode===1)return 1;
+  if(buyMode===10)return 10;
+  var n=0,cost=0;while(n<500){var c=Math.floor(ac.cost*Math.pow(ac.cg,cnt+n));if(cost+c>S.credits)break;cost+=c;n++;}return Math.max(1,n);
+}
 
 // ═══════════════════════════════════════
 // 3-D SCENE (Three.js)
@@ -588,35 +593,39 @@ let T=0;
 (function anim(){requestAnimationFrame(anim);T+=0.007;tickEvents();tickVehicles();if(towerRadar)towerRadar.rotation.y=T*0.7;if(radar2)radar2.rotation.y=-T*0.5;R.render(SC,CAM);})();
 }catch(_3dErr){console.warn('[IRONSKY] 3D init failed:',_3dErr.message);}
 } // end if(THREE loaded)
-function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var chips='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag:orbit · Scroll:zoom · R-drag:pan</div>';if(owned.length){chips+=owned.map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' <b>\xd7'+S.owned[a.id]+'</b></div>';}).join('');}el.innerHTML=chips;}
+function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var activeMissions=MID.filter(function(m){return S.missions[m.id]&&S.missions[m.id].active;}).length;var chips='<div class="s-chip" style="font-size:9px;color:var(--g);font-weight:700">$'+fmtN(ips())+'/s</div>';chips+='<div class="s-chip" style="font-size:9px">Fleet: '+fleet()+'</div>';if(activeMissions>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--b)">Ops: '+activeMissions+' active</div>';if(S.prestigeStars>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--p)">★'+S.prestigeStars+' prestige</div>';chips+='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag·Scroll</div>';if(owned.length){chips+=owned.slice(0,4).map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' \xd7'+S.owned[a.id]+'</div>';}).join('');if(owned.length>4)chips+='<div class="s-chip" style="color:var(--muted)">+'+( owned.length-4)+' more</div>';}el.innerHTML=chips;}
 
 // ═══ RENDER — FLEET ═══
 function renderFleet(){
-  const fl=fleet();const mb=S.upgLvl['multi_buy']>0;const qty=mb?10:1;
+  const fl=fleet();const curIps=ips();
+  const modeLabel=buyMode===1?'×1':buyMode===10?'×10':'MAX';
   document.getElementById('view-fleet').innerHTML=
-    `<div class="sh">Aircraft Roster <span>${fl} total · $${fmtN(ips())}/s</span></div>
-    <div class="acg">`+
+    `<div class="sh">Aircraft Roster <span>${fl} total · $${fmtN(curIps)}/s</span>
+      <button onclick="toggleBuyMode()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--g);padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:700">${modeLabel}</button>
+    </div><div class="acg">`+
     ACD.map(ac=>{
       const cnt=S.owned[ac.id]||0;const locked=fl<ac.unlockF;
+      const qty=locked?1:calcBuyQty(ac,cnt);
       let totalCost=0;for(let i=0;i<qty;i++)totalCost+=ac.cost*Math.pow(ac.cg,cnt+i);totalCost=Math.floor(totalCost);
-      // stealth discount for B-2/B-21
       if((ac.id==='b2'||ac.id==='b21')&&(S.cmdLvl['phantom']||0)>0)totalCost=Math.floor(totalCost*stealthDiscount());
+      const singleCost=Math.floor(ac.cost*Math.pow(ac.cg,cnt));
       const canAfford=!locked&&S.credits>=totalCost;
-      const nextCost=Math.floor(ac.cost*Math.pow(ac.cg,cnt+qty));
-      return`<div class="acc${locked?' locked':''}" style="border-top:2px solid ${ac.col}">
-        ${cnt>0?`<div class="cnt">\xd7${cnt}</div>`:''}
+      const etaSecs=(!locked&&!canAfford&&curIps>0)?Math.ceil((singleCost-S.credits)/curIps):0;
+      const ipsLine=cnt>0?`<div style="font-size:9px;color:var(--g);margin-top:1px">$${fmtN(ac.ips*cnt)}/s (fleet)</div>`:'';
+      const btnLabel=buyMode==='max'&&qty>1?`MAX(${qty}) $${fmtN(totalCost)}`:qty>1?`×${qty} $${fmtN(totalCost)}`:`$${fmtN(totalCost)}`;
+      return\`<div class="acc${locked?' locked':''}" style="border-top:2px solid ${ac.col}">
+        ${cnt>0?\`<div class="cnt">\xd7${cnt}</div>\`:''}
         <div class="aname">${ac.name}</div>
         <div class="arole">${ac.role}</div>
-        <div class="astat"><span class="k">$/sec</span><span class="v">$${fmtN(ac.ips*(cnt||1))}</span></div>
+        ${ipsLine}
         <div class="aspec">${ac.spec}</div>
         ${locked
-          ?`<button class="btn bm" disabled style="font-size:10px">Need ${ac.unlockF} fleet</button>`
-          :`<button class="btn ${canAfford?'bg':'bm'}" ${!canAfford?'disabled':''} onclick="buyAC('${ac.id}')">
-            ${mb?'\xd710 ':''}Buy $${fmtN(totalCost)}
-           </button>
-           ${cnt>0?`<div style="font-size:9px;color:var(--muted);text-align:center;margin-top:2px">Next: $${fmtN(nextCost)}</div>`:''}`}
-      </div>`;
-    }).join('')+`</div>`;
+          ?\`<div style="font-size:9px;color:var(--muted);text-align:center;padding:4px">Need ${ac.unlockF} aircraft (${ac.unlockF-fl} more)</div>\`
+          :canAfford
+            ?\`<button class="btn bg" onclick="buyAC('${ac.id}')">${btnLabel}</button>\`
+            :\`<button class="btn bm" disabled>$${fmtN(singleCost)}${etaSecs>0?\` · ⏱${etaSecs<3600?etaSecs<60?etaSecs+'s':Math.ceil(etaSecs/60)+'m':Math.ceil(etaSecs/3600)+'h'}\`:''}</button>\`}
+      </div>\`;
+    }).join('')+\`</div>\`;
 }
 // ═══ RENDER — MISSIONS ═══
 function renderMissions(){
@@ -627,18 +636,19 @@ function renderMissions(){
       const ac=ACD.find(a=>a.id===md.ac);const ms=S.missions[md.id];const owned=S.owned[md.ac]||0;
       const dur=Math.max(3,Math.round(md.dur*m.speed));const reward=Math.floor(md.base*m.reward);
       const autoUpg=UPG.find(u=>u.effect==='auto'&&u.ac===md.ac);const isAuto=autoUpg&&(S.upgLvl[autoUpg.id]||0)>0;
-      const canLaunch=owned>0&&!ms.active;let timerTxt='';
-      if(ms.active){const rem=Math.max(0,Math.ceil((ms.endTime-now)/1000));timerTxt=`${rem}s`;}
+      const canLaunch=owned>0&&!ms.active;let timerTxt='';let pct=0;
+      if(ms.active){const rem=Math.max(0,Math.ceil((ms.endTime-now)/1000));timerTxt=`${rem}s`;pct=Math.min(100,ms.progress*100);}
+      const rewardColor=ms.active?'var(--g)':'var(--a)';
       return`<div class="mc${ms.active?' run':''}${isAuto?' auto':''}">
         <div class="mh"><div><div class="mt">${md.name}</div>
         <div class="ms">${ac.name.split(' ')[0]} · ${dur}s · ${isAuto?'<span style="color:var(--g)">⚡ AUTO</span>':'Manual'}</div></div>
-        <div class="bdg bdg-a">$${fmtN(reward)}</div></div>
-        <div style="font-size:10px;color:var(--muted)">${md.desc}</div>
+        <div class="bdg" style="background:#ffffff11;color:${rewardColor};border:1px solid ${rewardColor}44">$${fmtN(reward)}</div></div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${md.desc}</div>
         ${ms.active
-          ?`<div class="pw"><div class="pf b" id="p${md.id}" style="width:${Math.min(100,ms.progress*100).toFixed(1)}%"></div></div>
+          ?`<div class="pw" style="height:6px"><div class="pf b" id="p${md.id}" style="width:${pct.toFixed(1)}%;transition:width 0.18s linear"></div></div>
             <div class="mf"><span style="font-size:10px;color:var(--b)">⏱ ${timerTxt} remaining</span><span class="bdg bdg-b">In Progress</span></div>`
           :`<button class="btn ${canLaunch?'bb':'bm'}" ${!canLaunch?'disabled':''} onclick="launch('${md.id}')">
-              ${owned===0?'Need '+ac.name.split(' ')[0]:'Launch Mission'}
+              ${owned===0?`<span style="color:var(--muted)">Need ${ac.name.split(' ')[0]}</span>`:'▶ Launch Mission'}
             </button>`}
       </div>`;
     }).join('');
@@ -696,7 +706,7 @@ function renderWar(forceNew=false){
       <div class="bgrid">${th.battles.map((b,i)=>{
         const won=(wins||0)>i;const avail=i===wins&&reqMet&&!conquered;const locked=i>wins;
         const wchance=Math.min(95,Math.max(5,Math.round(wp/(wp+warPower()*b.pm)*100)));
-        return`<div class="bbtn ${won?'won':avail?'avail':'locked'}" ${avail?`onclick="engageTheatre('${th.id}',${i})"`:''}>${won?'✓':avail?`${wchance}%`:'🔒'}<br><span style="font-size:7px">${b.name.split(' ')[0]}</span></div>`;
+        const wr=Math.min(95,Math.max(5,Math.round(wp/(wp+warPower()*b.pm)*100)));return`<div class="bbtn ${won?'won':avail?'avail':'locked'}" title="${b.name}: ${b.desc}" ${avail?`onclick="engageTheatre('${th.id}',${i})"`:''}>${won?'✓':avail?`${wr}%`:'🔒'}<br><span style="font-size:7px;opacity:0.8">${b.name.split(' ')[0]}</span></div>`;
       }).join('')}</div>
       ${conquered?`<div style="font-size:10px;color:var(--g);text-align:center">${th.bonus}</div>`:`<div style="font-size:10px;color:var(--muted)">${wins}/5 battles · ${th.bonus}</div>`}
     </div>`;
@@ -704,16 +714,20 @@ function renderWar(forceNew=false){
   // quick strikes
   html+=`<div class="sh" style="margin-top:12px">Quick Strike <span>Skirmish Mode</span></div>`;
   if(!warEnemies||forceNew)warEnemies=genEnemies(wp);
-  html+=warEnemies.map((e,i)=>`<div class="wcard">
-    <div class="wname">⚠ ${e.name}</div>
+  html+=warEnemies.map((e,i)=>{const pr=Math.min(98,Math.round(wp/(wp+e.power)*100));const myW=Math.round(pr);const enW=100-myW;return`<div class="wcard">
+    <div class="wname">⚠ ${e.name} <span style="color:${e.col};font-size:10px">[${e.diff}]</span></div>
+    <div style="display:flex;gap:2px;height:6px;border-radius:3px;overflow:hidden;margin:6px 0">
+      <div style="flex:${myW};background:var(--g);transition:flex 0.4s"></div>
+      <div style="flex:${enW};background:var(--r);transition:flex 0.4s"></div>
+    </div>
     <div class="wstats">
-      <div class="wstat">Power <span>⚔️${fmtN(e.power)}</span></div>
-      <div class="wstat">Difficulty <span style="color:${e.col}">${e.diff}</span></div>
+      <div class="wstat">Your Power <span style="color:var(--g)">⚔️${fmtN(wp)}</span></div>
+      <div class="wstat">Enemy Power <span style="color:var(--r)">⚔️${fmtN(e.power)}</span></div>
       <div class="wstat">Reward <span style="color:var(--a)">$${fmtN(e.reward)}</span></div>
       <div class="wstat">Win Chance <span style="color:${e.winChance>=50?'var(--g)':'var(--r)'}">${e.winChance}%</span></div>
     </div>
     <button class="btn br" onclick="engageWar(${i})">⚔ ATTACK</button>
-  </div>`).join('')+
+  </div>`;}).join('')+
     `<button class="btn bm" style="margin-top:4px" onclick="renderWar(true)">Find New Targets</button>`;
   el.innerHTML=html;
 }
@@ -851,6 +865,7 @@ function showPrestige(){
   const ribbons=Math.floor((S.medals||0)/3);
   const ribbonMult=1+(ribbons*5);
   const canStar=stars>S.prestigeStars&&totalE>=100000;
+  const starsToNext=Math.ceil((Math.pow(10,S.prestigeStars+1)-totalE)/Math.max(1,ips()));
   const canMedal=(S.prestigeStars>=5)&&medals>(S.medals||0)&&totalE>=5000000;
   const canRibbon=(S.medals||0)>=3&&ribbons>(S.ribbons||0)&&totalE>=500000000;
   const el=document.createElement('div');el.className='pmodal';
@@ -859,6 +874,7 @@ function showPrestige(){
     <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">Reset for Power</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Each tier resets more — each tier rewards more.</div>
     <div class="omrow"><span class="k">Total Earned</span><span class="v">$${fmtN(totalE)}</span></div>
+    <div class="omrow"><span class="k">Income Rate</span><span class="v">$${fmtN(ips())}/s</span></div>
     <div class="omrow"><span class="k">Stars / Medals / Ribbons</span><span class="v">★${S.prestigeStars} / 🎖${S.medals||0} / 🎗${S.ribbons||0}</span></div>
     <div class="ptier${canStar?' avail':''}" style="margin-top:12px">
       <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--p);margin-bottom:6px">★ TIER 1 — COMBAT STARS</div>
@@ -926,12 +942,12 @@ function doRibbonPrestige(ribbons){
 // ═══ ACTIONS ═══
 function buyAC(id){
   const ac=ACD.find(a=>a.id===id);if(!ac)return;
-  const qty=(S.upgLvl['multi_buy']>0)?10:1;
-  let cost=0;for(let i=0;i<qty;i++)cost+=ac.cost*Math.pow(ac.cg,(S.owned[id]||0)+i);cost=Math.floor(cost);
+  const cnt=S.owned[id]||0;const qty=calcBuyQty(ac,cnt);
+  let cost=0;for(let i=0;i<qty;i++)cost+=ac.cost*Math.pow(ac.cg,cnt+i);cost=Math.floor(cost);
   if((ac.id==='b2'||ac.id==='b21')&&(S.cmdLvl['phantom']||0)>0)cost=Math.floor(cost*stealthDiscount());
-  if(S.credits<cost)return;
-  S.credits-=cost;S.owned[id]=(S.owned[id]||0)+qty;
-  toast(`${ac.name.split(' ')[0]} \xd7${qty} deployed`,'var(--g)');
+  if(S.credits<cost){toast('Insufficient funds','var(--r)');return;}
+  S.credits-=cost;S.owned[id]=cnt+qty;
+  toast(`${ac.name.split(' ')[0]} \xd7${cnt+qty}`,'var(--g)');
   updatePlanes();setTimeout(function(){triggerTakeoff(id);},200);
   checkAchievements();refreshAll();
 }
@@ -998,10 +1014,13 @@ function checkAchievements(){
 }
 // ═══ EMERGENCY EVENTS ═══
 const EVENT_TYPES=[
-  {type:'fuel',  text:'🚨 FUEL DEPOT SECURED — Double income for 3 min!',dur:180000,btnTxt:'ACTIVATE'},
-  {type:'intel', text:'📡 INTEL INTERCEPT — Mission rewards ×5 for 2 min!',dur:120000,btnTxt:'EXPLOIT'},
-  {type:'war',   text:'💥 AIR SUPERIORITY — War rewards doubled for 2 min!',dur:120000,btnTxt:'ATTACK'},
-  {type:'drop',  text:'🎁 SUPPLY DROP — Free $',dur:0,btnTxt:'CLAIM'},
+  {type:'fuel',    text:'🚨 FUEL DEPOT SECURED — Double income for 3 min!',dur:180000,btnTxt:'ACTIVATE'},
+  {type:'intel',   text:'📡 INTEL INTERCEPT — Mission rewards ×5 for 2 min!',dur:120000,btnTxt:'EXPLOIT'},
+  {type:'war',     text:'💥 AIR SUPERIORITY — War rewards doubled for 2 min!',dur:120000,btnTxt:'ATTACK'},
+  {type:'drop',    text:'🎁 SUPPLY DROP — Free $',dur:0,btnTxt:'CLAIM'},
+  {type:'nato',    text:'🌐 NATO EXERCISE — All income ×3 for 90 seconds!',dur:90000,btnTxt:'DEPLOY'},
+  {type:'scramble',text:'🚀 EMERGENCY SCRAMBLE — Instant 5-min income bonus!',dur:0,btnTxt:'SCRAMBLE'},
+  {type:'surge',   text:'⚡ OPERATIONS SURGE — Missions complete 5× faster for 2 min!',dur:120000,btnTxt:'SURGE'},
 ];
 let nextEvent=Date.now()+(180000+Math.random()*120000);
 function checkEvent(){
@@ -1011,6 +1030,10 @@ function checkEvent(){
   if(t.type==='drop'){
     const amt=Math.floor(ips()*120);S.credits+=amt;S.totalEarned+=amt;
     toast(`🎁 Supply Drop! +$${fmtN(amt)} credits`,'var(--a)');nextEvent=Date.now()+(180000+Math.random()*120000);return;
+  }
+  if(t.type==='scramble'){
+    const amt=Math.floor(ips()*300);S.credits+=amt;S.totalEarned+=amt;
+    toast(`🚀 Emergency Scramble! +$${fmtN(amt)}`,'var(--r)');nextEvent=Date.now()+(180000+Math.random()*120000);return;
   }
   S.eventActive={type:t.type,endTime:Date.now()+t.dur};
   const banner=document.getElementById('evtbanner');const card=document.getElementById('evtcard');
@@ -1050,11 +1073,14 @@ setInterval(()=>{updateSceneHUD();if(curView==='fleet')renderFleet();else if(cur
 function checkNavDots(){
   const fl=fleet();
   document.getElementById('dot-fleet').classList.toggle('show',ACD.some(a=>fl>=a.unlockF&&!(S.owned[a.id]>0)&&S.credits>=a.cost));
-  document.getElementById('dot-missions').classList.toggle('show',MID.some(md=>S.owned[md.ac]>0&&!S.missions[md.id].active));
+  const completableMissions=MID.some(md=>S.owned[md.ac]>0&&!S.missions[md.id].active);
+  document.getElementById('dot-missions').classList.toggle('show',completableMissions);
   document.getElementById('dot-base').classList.toggle('show',BLDG.some(b=>!S.buildings[b.id]&&(!b.req||S.buildings[b.req])&&S.credits>=b.cost));
 }
 // ═══ HUD ═══
+var _lastIpsMilestone=0;const _IPS_MILESTONES=[100,1e3,1e4,1e5,1e6,1e8,1e10,1e12,1e15];function checkIpsMilestone(){var cur=ips();var m=_IPS_MILESTONES.filter(function(v){return v<=cur;}).pop()||0;if(m>_lastIpsMilestone&&_lastIpsMilestone>0){toast('⚡ Income reached $'+fmtN(m)+'/s!','var(--g)');}if(m>_lastIpsMilestone)_lastIpsMilestone=m;}
 function updateHUD(){
+  checkIpsMilestone();
   document.getElementById('hc').textContent='$'+fmtN(S.credits);
   document.getElementById('hi').textContent='$'+ips().toFixed(1)+'/s';
   document.getElementById('hf').textContent=fleet();
