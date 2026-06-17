@@ -72,7 +72,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .bdg-m{background:#ffffff08;color:var(--muted);border:1px solid var(--border)}
 .bdg-c{background:#00d2ff15;color:#00d2ff;border:1px solid #00d2ff30}
 .pw{height:4px;background:#ffffff0a;border-radius:2px;margin-top:5px;overflow:hidden}
-.sortie-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color 0.2s}.sortie-row.active{border-color:var(--b)44;background:var(--card2)}.sortie-row.locked{opacity:0.4}.sr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.sr-ac{font-weight:700;font-size:13px}.sr-count{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1px 7px;font-size:10px;color:var(--g);font-weight:700}.sr-reward{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--a);font-weight:700}.sr-bot{display:flex;justify-content:space-between;align-items:center;margin-top:5px}.sr-bar{height:10px;background:#ffffff0a;border-radius:5px;overflow:hidden;flex:1;margin:0 8px}.sr-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--b),var(--g));transition:width 0.2s linear}.sr-info{font-size:9px;color:var(--muted)}.base-income-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:6px;background:var(--bg3);margin-bottom:4px;font-size:11px}
+.sortie-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:all 0.2s;border-left-width:3px}.sortie-row.active{background:var(--card2)}.sortie-row.locked{opacity:0.4}@keyframes sortie-pulse{0%,100%{opacity:1}50%{opacity:0.7}}.sr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.sr-ac{font-weight:700;font-size:13px}.sr-count{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1px 7px;font-size:10px;color:var(--g);font-weight:700}.sr-reward{font-family:'Orbitron',sans-serif;font-size:12px;color:var(--a);font-weight:700}.sr-bot{display:flex;justify-content:space-between;align-items:center;margin-top:5px}.sr-bar{height:10px;background:#ffffff0a;border-radius:5px;overflow:hidden;flex:1;margin:0 8px}.sr-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--b),var(--g));transition:width 0.2s linear}.sr-info{font-size:9px;color:var(--muted)}.base-income-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:6px;background:var(--bg3);margin-bottom:4px;font-size:11px}
 .pf{height:100%;border-radius:2px;transition:width 0.2s}
 .pf.g{background:var(--g)}.pf.b{background:var(--b)}.pf.a{background:var(--a)}.pf.p{background:var(--p)}.pf.r{background:var(--r)}
 .mc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
@@ -154,6 +154,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
   <div class="pill"><span class="l">Credits</span><span class="v" id="hc">$500</span></div>
   <div class="pill"><span class="l">$/s</span><span class="v g" id="hi">$0</span></div>
   <div class="pill"><span class="l">Fleet</span><span class="v b" id="hf">0</span></div>
+  <div class="pill" style="display:none" id="base-income-pill"><span class="l">Base</span><span class="v c" id="hbase">$0/s</span></div>
   <div class="pill" id="prestige-pill" onclick="showPrestige()"><span class="l">Stars</span><span class="v p" id="hp">★0</span></div>
   <div class="pill" id="medal-pill" style="display:none"><span class="l">Medals</span><span class="v c" id="hm">🎖0</span></div>
   <div id="save-dot" title="Autosave"></div>
@@ -363,10 +364,10 @@ function defState(){
     theatreWins:tw,achievements:{},actionCD:{},actionBest:{},
     missionsComplete:0,warsWon:0,warsFought:0,totalEarned:0,
     prestigeStars:0,prestigeMult:1,medals:0,ribbons:0,
-    sortieEarned:0,eventActive:null,savedAt:Date.now()};
+    sortieEarned:0,crewLvl:{},eventActive:null,savedAt:Date.now()};
 }
 let S=defState();
-try{const r=localStorage.getItem('ironsky_v4');if(r){const d=JSON.parse(r);S=Object.assign(defState(),d);if(!S.theatreWins)S.theatreWins={desert:0,pacific:0,arctic:0};if(!S.cmdLvl)S.cmdLvl={};if(!S.achievements)S.achievements={};if(!S.actionCD)S.actionCD={};if(!S.actionBest)S.actionBest={};}}catch(e){}
+try{const r=localStorage.getItem('ironsky_v4');if(r){const d=JSON.parse(r);S=Object.assign(defState(),d);if(!S.theatreWins)S.theatreWins={desert:0,pacific:0,arctic:0};if(!S.cmdLvl)S.cmdLvl={};if(!S.achievements)S.achievements={};if(!S.actionCD)S.actionCD={};if(!S.actionBest)S.actionBest={};if(!S.crewLvl)S.crewLvl={};}}catch(e){}
 // ═══ CALCULATIONS ═══
 function calcMods(){
   let income=1,speed=1,reward=1,war=1,slots=1;
@@ -453,7 +454,8 @@ R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
 R.setPixelRatio(Math.min(devicePixelRatio,2));
 R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=0.9;
 const SC=new THREE.Scene();
-SC.background=new THREE.Color(0x9fd4e8);
+SC.background=new THREE.Color(0x7ec8e3);
+var fogColor=new THREE.Color(0xb8dce8);SC.fog=new THREE.FogExp2(fogColor,0.0025);
 // ── Fixed isometric (orthographic) camera — clean idle-game look ──
 var CAM_TARGET=new THREE.Vector3(0,3,4);
 var CAM_VIEW=56;var CAM_THETA=0.92;var CAM_PHI=Math.PI*0.75;
@@ -502,6 +504,12 @@ addApron(180,140,0,10);
 addApron(80,60,-70,0);
 [-90,90].forEach(function(x){addBox(0.5,0.34,140,x,0.31,10,SM(0xd9cf9a));});
 [-60,80].forEach(function(z){addBox(180,0.34,0.5,0,0.31,z,SM(0xd9cf9a));});
+// Runway threshold bars (white dashes at each end)
+[-100,95].forEach(function(z){for(var xi=-3;xi<=3;xi++){addBox(3,0.36,1.2,xi*8,0.32,z,SM(0xfafaf8));}});
+// Taxiway centerline (yellow)
+addBox(0.35,0.36,240,0,0.32,10,new THREE.MeshLambertMaterial({color:0xffdd00}));
+// Hold short bars (two yellow lines)
+[-88,88].forEach(function(z){addBox(180,0.36,0.3,0,0.32,z,new THREE.MeshLambertMaterial({color:0xffdd00}));addBox(180,0.36,0.3,0,0.33,z+1.4,new THREE.MeshLambertMaterial({color:0xffdd00}));});
 addBox(22,0.35,200,0,0.18,0,SM(0x2a2a2a,0.95,0),false);
 addBox(0.5,0.36,200,0,0.19,0,SM(0xffdd00,0.8,0));
 for(var ri=0;ri<8;ri++){addBox(1.5,0.36,6,ri*2.5-8.75,0.19,92,SM(0xffffff,0.85,0));addBox(1.5,0.36,6,ri*2.5-8.75,0.19,-92,SM(0xffffff,0.85,0));}
@@ -509,7 +517,12 @@ for(var rd=-4;rd<=4;rd++){addBox(1.2,0.36,5,0,0.19,rd*18,SM(0x888888,0.9,0));}
 addBox(0.4,0.36,200,-11,0.19,0,SM(0xffffff,0.85,0));addBox(0.4,0.36,200,11,0.19,0,SM(0xffffff,0.85,0));
 addBox(14,0.32,180,-40,0.16,0,SM(0x3a3a38),false);addBox(0.4,0.33,180,-33,0.17,0,SM(0xd9cf9a));addBox(14,0.32,60,40,0.16,60,SM(0x3a3a38),false);
 var padPositions=[[-55,-40],[-55,-15],[-55,10],[-55,35],[55,-40],[55,-15],[55,10],[55,35]];
-padPositions.forEach(function(p,i){addApron(28,20,p[0],p[1],2);addBox(28,0.33,0.5,p[0],0.18,p[1]+9.8,SM(0xe6dca8));addBox(28,0.33,0.5,p[0],0.18,p[1]-9.8,SM(0xe6dca8));addBox(0.5,0.33,20,p[0]-13.8,0.18,p[1],SM(0xe6dca8));addBox(0.5,0.33,20,p[0]+13.8,0.18,p[1],SM(0xe6dca8));});
+padPositions.forEach(function(p,i){addApron(28,20,p[0],p[1],2);addBox(28,0.33,0.5,p[0],0.18,p[1]+9.8,SM(0xe6dca8));addBox(28,0.33,0.5,p[0],0.18,p[1]-9.8,SM(0xe6dca8));addBox(0.5,0.33,20,p[0]-13.8,0.18,p[1],SM(0xe6dca8));addBox(0.5,0.33,20,p[0]+13.8,0.18,p[1],SM(0xe6dca8));
+  // Parking number circle
+  var numMat=new THREE.MeshBasicMaterial({color:0xfff8e0,transparent:true,opacity:0.7});var circ=new THREE.Mesh(new THREE.CircleGeometry(3.5,16),numMat);circ.rotation.x=-Math.PI/2;circ.position.set(p[0],0.32,p[1]);SC.add(circ);
+  // Yellow chocks (front wheel stops)
+  addBox(8,0.5,0.5,p[0],0.32,p[1]-8,new THREE.MeshLambertMaterial({color:0xffcc00}));
+});
 function buildHangar(x,z,w,d,h,col){col=col||0xd8d5cc;var wm=SM(col,0.7,0.15);addBox(w,0.4,d,x,0.2,z,SM(0xb0ada4,0.85,0.05),false);addBox(w,h,0.6,x,h/2,z-d/2,wm);addBox(0.6,h,d,x-w/2,h/2,z,wm);addBox(0.6,h,d,x+w/2,h/2,z,wm);var arch=new THREE.Mesh(new THREE.CylinderGeometry(d/2,d/2,w,16,1,false,0,Math.PI),SM(0xc5c2b8,0.72,0.2));arch.rotation.z=Math.PI/2;arch.position.set(x,h,z);SC.add(arch);addBox(w,h,0.5,x,h/2,z+d/2,SM(0x888880,0.8,0.3));addBox(w-3,h-1,0.6,x,h/2,z+d/2+0.1,SM(0x222220,0.9,0.1));}
 buildHangar(-65,-20,30,18,12);buildHangar(-65,8,30,18,12);buildHangar(-65,36,30,18,12,0xcfccbf);buildHangar(65,-20,30,18,12);buildHangar(65,8,30,18,12,0xcfccbf);
 // hangar labels
@@ -549,6 +562,14 @@ buildWarehouse(85,60,20,12);buildWarehouse(70,60,12,10,0xb8b5ac);buildWarehouse(
 addBox(22,6,14,85,3,-55,SM(0xb5b2a8,0.8,0.1));addBox(22,0.5,14,85,6.3,-55,SM(0x888880,0.7,0.2));addBox(4,6,0.5,85,3,-48.3,SM(0x333330,0.9,0.1));
 var fenceM=SM(0x888880,0.7,0.4);
 [-105,105].forEach(function(x){addBox(0.5,3,220,x,1.5,0,fenceM);});[-105,105].forEach(function(z){addBox(210,3,0.5,0,1.5,z,fenceM);});
+// Trees
+(function(){var leafM=new THREE.MeshLambertMaterial({color:0x2d7a2d});var trunkM=SM(0x6b4c2a);
+[[-95,-90],[-85,-90],[-75,-90],[75,-90],[85,-90],[95,-90],[-95,90],[-85,90],[-75,90],[75,90],[85,90],[95,90]].forEach(function(tp){
+  var tg=new THREE.Group();var trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.4,0.6,4,7),trunkM);trunk.position.y=2;tg.add(trunk);
+  var leaf=new THREE.Mesh(new THREE.ConeGeometry(3.5,7,8),leafM);leaf.position.y=7;tg.add(leaf);
+  var leaf2=new THREE.Mesh(new THREE.ConeGeometry(2.8,6,8),leafM);leaf2.position.y=10;tg.add(leaf2);
+  tg.position.set(tp[0],0,tp[1]);tg.scale.setScalar(0.8+Math.random()*0.4);SC.add(tg);
+});})();
 [[-100,-100],[100,-100],[-100,100],[100,100]].forEach(function(p){addBox(4,8,4,p[0],4,p[1],SM(0xaaa8a0,0.75,0.2));addBox(6,1.5,6,p[0],8.5,p[1],SM(0x666660,0.7,0.3));});
 addCyl(0.1,0.12,6,6,20,3,0,SM(0xdddddd,0.5,0.6));
 var wsock=new THREE.Mesh(new THREE.ConeGeometry(0.6,2.5,8),SM(0xff4400,0.7,0.1));wsock.rotation.z=-Math.PI/2;wsock.position.set(21.5,6.2,0);SC.add(wsock);
@@ -581,7 +602,9 @@ const PLANES=[]; // orbiting flyby models removed — aircraft are parked on the
 var PAD_POSITIONS=[[-55,-40],[-55,-15],[-55,10],[-55,35],[55,-40],[55,-15],[55,10],[55,35]];
 var PARKED_PLANES={};
 var PARK_SCALE=1.0;
-function placeParked(builder,hexCol,pos){var grp=builder(hexCol);grp.scale.setScalar(PARK_SCALE);grp.position.set(pos[0],0.45,pos[1]);grp.rotation.y=Math.PI/2;SC.add(grp);return grp;}
+function placeParked(builder,hexCol,pos){var grp=builder(hexCol);grp.scale.setScalar(PARK_SCALE);grp.position.set(pos[0],0.45,pos[1]);grp.rotation.y=Math.PI/2;
+  addNavLight(grp,-6.5,0.8,2.8,0xff2222,0);addNavLight(grp,-6.5,0.8,-2.8,0x22cc44,0);addNavLight(grp,-2.0,2.2,0,0xffffff,1);
+  SC.add(grp);return grp;}
 function refreshParkedAircraft(){Object.values(PARKED_PLANES).forEach(function(g){SC.remove(g);});PARKED_PLANES={};var padIdx=0;ACD.forEach(function(ac,i){var count=S.owned[ac.id]||0;if(!count||padIdx>=PAD_POSITIONS.length)return;var hexCol=parseInt(ac.col.replace('#',''),16);var builder=BUILDERS[ac.id];if(!builder)return;PARKED_PLANES[ac.id]=placeParked(builder,hexCol,PAD_POSITIONS[padIdx++]);if(count>1){for(var extra=1;extra<Math.min(count,3);extra++){if(padIdx>=PAD_POSITIONS.length)break;placeParked(builder,hexCol,PAD_POSITIONS[padIdx++]);}}});}
 // Planes stay parked on the apron (optimised) — orbiting models kept hidden; life comes from takeoff/landing events
 updatePlanes=function(){PLANES.forEach(function(p){p.visible=false;});refreshParkedAircraft();updateHangarLabels();};
@@ -594,7 +617,16 @@ onMissionComplete=function(missionId){var md=MID.find(function(m){return m.id===
 resizeSC=function(){var vs=document.getElementById('view-scene');if(!vs)return;var w=vs.clientWidth||1,h=vs.clientHeight||1;R.setSize(w,h,false);applyZoom();updateCamera();};
 resizeSC();window.addEventListener('resize',resizeSC);
 let T=0;
-(function anim(){requestAnimationFrame(anim);T+=0.007;tickEvents();tickVehicles();if(towerRadar)towerRadar.rotation.y=T*0.7;if(radar2)radar2.rotation.y=-T*0.5;R.render(SC,CAM);})();
+var NAV_LIGHTS=[];
+function addNavLight(parent,x,y,z,col,phase){var m=new THREE.Mesh(new THREE.SphereGeometry(0.18,6,6),new THREE.MeshBasicMaterial({color:col,transparent:true}));m.position.set(x,y,z);parent.add(m);NAV_LIGHTS.push({mesh:m,phase:phase||0});}
+// Wind sock
+(function(){var ws=new THREE.Group();var cone=new THREE.Mesh(new THREE.ConeGeometry(0.55,3.5,10,1,true),new THREE.MeshLambertMaterial({color:0xff4422,side:THREE.DoubleSide,transparent:true,opacity:0.88}));cone.rotation.z=Math.PI/2;cone.position.set(1.75,0,0);ws.add(cone);var pole=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,5,8),SM(0xaaaaaa));pole.position.y=2.5;ws.add(pole);ws.position.set(80,5,-75);SC.add(ws);})();
+// Terminal building
+(function(){var tg=new THREE.Group();addM(tg,new THREE.BoxGeometry(30,8,14),SM(0xd4cbb8),0,4,0);addM(tg,new THREE.BoxGeometry(32,1,16),SM(0xb8b0a0),0,8.5,0);[[-10,4,7],[0,4,7],[10,4,7],[-10,4,-7],[0,4,-7],[10,4,-7]].forEach(function(p){addM(tg,new THREE.BoxGeometry(3.5,5,0.2),new THREE.MeshLambertMaterial({color:0x88ccee,transparent:true,opacity:0.6}),p[0],p[1],p[2]);});addM(tg,new THREE.BoxGeometry(4,9,4),SM(0xccbbaa),-13,4.5,0);var sign=new THREE.Mesh(new THREE.BoxGeometry(12,2,0.3),new THREE.MeshBasicMaterial({color:0x002244}));sign.position.set(0,9.2,7.1);tg.add(sign);tg.position.set(0,0,-95);SC.add(tg);})();
+(function anim(){requestAnimationFrame(anim);T+=0.007;tickEvents();tickVehicles();
+  var blink=Math.sin(T*3)>0;var slowBlink=Math.sin(T*1.2)>0.3;
+  NAV_LIGHTS.forEach(function(nl){var on=nl.phase>0?slowBlink:blink;nl.mesh.material.opacity=on?0.95:0.05;nl.mesh.material.color.setHex(nl.phase>0?0xffffff:nl.mesh.material.color.getHex());});
+  if(towerRadar)towerRadar.rotation.y=T*0.7;if(radar2)radar2.rotation.y=-T*0.5;R.render(SC,CAM);})();
 }catch(_3dErr){console.warn('[IRONSKY] 3D init failed:',_3dErr.message);}
 } // end if(THREE loaded)
 function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var activeMissions=MID.filter(function(m){return S.missions[m.id]&&S.missions[m.id].active;}).length;var chips='<div class="s-chip" style="font-size:9px;color:var(--g);font-weight:700">$'+fmtN(ips())+'/s</div>';chips+='<div class="s-chip" style="font-size:9px">Fleet: '+fleet()+'</div>';if(activeMissions>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--b)">Ops: '+activeMissions+' active</div>';if(S.prestigeStars>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--p)">★'+S.prestigeStars+' prestige</div>';chips+='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag·Scroll</div>';if(owned.length){chips+=owned.slice(0,4).map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' \xd7'+S.owned[a.id]+'</div>';}).join('');if(owned.length>4)chips+='<div class="s-chip" style="color:var(--muted)">+'+( owned.length-4)+' more</div>';}el.innerHTML=chips;}
@@ -603,7 +635,15 @@ function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)ret
 function renderFleet(){
   const fl=fleet();const curIps=ips();
   const modeLabel=buyMode===1?'×1':buyMode===10?'×10':'MAX';
+  const newPlayerHint=fl===0?`<div style="background:linear-gradient(135deg,#0a1a12,#081520);border:1px solid var(--g)33;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:11px;line-height:1.6">
+    <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:var(--g);letter-spacing:2px;margin-bottom:4px">MISSION BRIEFING</div>
+    <b>1.</b> Buy an F-16 to start sorties<br>
+    <b>2.</b> Run Ops tab missions to earn money<br>
+    <b>3.</b> Build base infrastructure for passive income<br>
+    <b>4.</b> Buy Auto-Dispatch in Tech to cycle sorties automatically
+  </div>`:'';
   document.getElementById('view-fleet').innerHTML=
+    newPlayerHint+
     `<div class="sh">Aircraft Roster <span>${fl} total · $${fmtN(curIps)}/s</span>
       <button onclick="toggleBuyMode()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--g);padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:700">${modeLabel}</button>
     </div><div class="acg">`+
@@ -617,17 +657,24 @@ function renderFleet(){
       const etaSecs=(!locked&&!canAfford&&curIps>0)?Math.ceil((singleCost-S.credits)/curIps):0;
       const ipsLine=cnt>0?`<div style="font-size:9px;color:var(--g);margin-top:1px">$${fmtN(ac.ips*cnt)}/s (fleet)</div>`:'';
       const btnLabel=buyMode==='max'&&qty>1?`MAX(${qty}) $${fmtN(totalCost)}`:qty>1?`×${qty} $${fmtN(totalCost)}`:`$${fmtN(totalCost)}`;
-      return\`<div class="acc${locked?' locked':''}" style="border-top:2px solid ${ac.col}">
+      const unlockPct=locked?Math.min(100,Math.floor(fl/ac.unlockF*100)):100;
+      return\`<div class="acc${locked?' locked':''}" style="border-top:2px solid ${ac.col};box-shadow:inset 0 0 0 0 ${ac.col}">
         ${cnt>0?\`<div class="cnt">\xd7${cnt}</div>\`:''}
-        <div class="aname">${ac.name}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${ac.col};box-shadow:0 0 5px ${ac.col};flex-shrink:0"></div>
+          <div class="aname" style="font-size:8px">${ac.name}</div>
+        </div>
         <div class="arole">${ac.role}</div>
         ${ipsLine}
-        <div class="aspec">${ac.spec}</div>
+        ${locked?\`<div style="margin:5px 0 2px">
+          <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-bottom:3px"><span>Unlock progress</span><span>${fl}/${ac.unlockF}</span></div>
+          <div style="height:4px;background:#ffffff0a;border-radius:2px;overflow:hidden"><div style="height:100%;width:${unlockPct}%;background:linear-gradient(90deg,var(--muted),${ac.col});border-radius:2px"></div></div>
+        </div>\`:''}
         ${locked
-          ?\`<div style="font-size:9px;color:var(--muted);text-align:center;padding:4px">Need ${ac.unlockF} aircraft (${ac.unlockF-fl} more)</div>\`
+          ?\`<div style="font-size:9px;color:var(--muted);text-align:center;padding:2px 0">${ac.unlockF-fl} more aircraft needed</div>\`
           :canAfford
-            ?\`<button class="btn bg" onclick="buyAC('${ac.id}')">${btnLabel}</button>\`
-            :\`<button class="btn bm" disabled>$${fmtN(singleCost)}${etaSecs>0?\` · ⏱${etaSecs<3600?etaSecs<60?etaSecs+'s':Math.ceil(etaSecs/60)+'m':Math.ceil(etaSecs/3600)+'h'}\`:''}</button>\`}
+            ?\`<button class="btn bg" onclick="buyAC('${ac.id}')" style="background:linear-gradient(135deg,var(--g2),#007a40)">${btnLabel}</button>\`
+            :\`<button class="btn bm" disabled style="font-size:10px">$${fmtN(singleCost)}${etaSecs>0?\` ⏱${etaSecs<3600?etaSecs<60?etaSecs+'s':Math.ceil(etaSecs/60)+'m':Math.ceil(etaSecs/3600)+'h'}\`:''}</button>\`}
       </div>\`;
     }).join('')+\`</div>\`;
 }
@@ -641,8 +688,14 @@ function renderMissions(){
     const owned=S.owned[md.ac]||0;
     return sum+(md.base*m.reward*4*(1+0.45*Math.sqrt(owned)))/dur;
   },0);
+  const hasAnyAuto=UPG.some(u=>u.effect==='auto'&&(S.upgLvl[u.id]||0)>0);
+  const ownedAny=ACD.some(a=>(S.owned[a.id]||0)>0);
+  const autoHint=ownedAny&&!hasAnyAuto?`<div style="background:linear-gradient(135deg,#0a1520,#0a1018);border:1px solid var(--b)33;border-radius:9px;padding:9px 12px;margin-bottom:10px;font-size:11px">
+    <span style="font-family:'Orbitron',sans-serif;font-size:8px;color:var(--b);letter-spacing:1px">⚡ TIP</span>
+    Buy Auto-Dispatch upgrades in the <b>Tech</b> tab to cycle sorties automatically — then come back here to watch your income stream!
+  </div>`:'';
   const el=document.getElementById('view-missions');
-  el.innerHTML=`<div class="sh">Sortie Operations <span>${activeSorties} active · $${fmtN(Math.floor(sortieRate))}/s</span></div>
+  el.innerHTML=autoHint+`<div class="sh">Sortie Operations <span>${activeSorties} active · $${fmtN(Math.floor(sortieRate))}/s</span></div>
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <div style="flex:1;background:var(--bg3);border-radius:8px;padding:7px 10px;text-align:center">
       <div style="font-size:9px;color:var(--muted)">SORTIES FLOWN</div>
@@ -676,7 +729,7 @@ function renderMissions(){
     const pct=ms&&ms.active?Math.min(100,ms.progress*100):0;
     const rem=ms&&ms.active?Math.max(0,Math.ceil((ms.endTime-now)/1000)):0;
     const canLaunch=owned>0&&ms&&!ms.active;
-    return`<div class="sortie-row${ms&&ms.active?' active':''}${!owned?' locked':''}">
+    return`<div class="sortie-row${ms&&ms.active?' active':''}${!owned?' locked':''}" style="border-left-color:${ac.col}${ms&&ms.active?';animation:none':''}">
       <div class="sr-top">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:10px;height:10px;border-radius:50%;background:${ac.col};flex-shrink:0"></div>
@@ -691,10 +744,16 @@ function renderMissions(){
         <div class="sr-bar"><div class="sr-fill" id="p${md.id}" style="width:${pct.toFixed(1)}%"></div></div>
         <div style="font-size:9px;color:var(--b);white-space:nowrap;width:28px;text-align:right">${ms&&ms.active?rem+'s':dur+'s'}</div>
       </div>
-      <div class="sr-bot">
-        <div class="sr-info">$${fmtN(ratePerHr)}/hr · ${isAuto?'cycling':'manual'}</div>
-        ${ms&&ms.active?'<div style="font-size:9px;color:var(--b)">In flight</div>'
-          :`<button class="btn bb" style="padding:3px 12px;font-size:10px;margin:0" onclick="launch('${md.id}')">▶ LAUNCH</button>`}
+        <div class="sr-bot">
+        <div class="sr-info">$${fmtN(ratePerHr)}/hr${isAuto?' · <span style="color:var(--g)">cycling</span>':' · manual'}</div>
+        <div style="display:flex;gap:5px;align-items:center">
+          ${ms&&ms.active
+            ?`<div style="font-size:9px;color:var(--b)">✈ In flight</div>`
+            :isAuto
+              ?`<div style="font-size:9px;color:var(--g)">⚡ Auto-queued</div>`
+              :`<button class="btn bb" style="padding:3px 12px;font-size:10px;margin:0" onclick="launch('${md.id}')">▶ LAUNCH</button>`}
+          ${(()=>{const cl=S.crewLvl[ac.id]||0;const maxed=cl>=5;const cc=crewUpgradeCost(ac.id);const canC=!maxed&&S.credits>=cc;return maxed?`<div style="font-size:8px;color:var(--g);padding:2px 5px;background:#00e87a11;border-radius:3px">CREW MAX</div>`:`<button onclick="hireCrewLvl('${ac.id}')" style="background:${canC?'#003a4a':'var(--card2)'};border:1px solid ${canC?'var(--c)33':'var(--border)'};color:${canC?'var(--c)':'var(--muted)'};padding:2px 6px;border-radius:4px;font-size:8px;cursor:pointer;font-family:inherit">⚙ Crew Lv${cl+1} $${fmtN(cc)}</button>`;})()}
+        </div>
       </div>`:
       `<div style="font-size:10px;color:var(--muted);padding:4px 0">Buy aircraft to run sorties (${ac.unlockF} fleet needed)</div>`}
     </div>`;
@@ -730,9 +789,24 @@ function renderUpgrades(){
 // ═══ RENDER — BASE ═══
 function renderBase(){
   const bInc=buildingIncome();
+  const totalBuilt=BLDG.filter(b=>S.buildings[b.id]).length;
+  const nextBuild=BLDG.find(b=>!S.buildings[b.id]&&(!b.req||S.buildings[b.req]));
   document.getElementById('view-base').innerHTML=
     `<div class="sh">Base Infrastructure <span style="color:var(--c)">+$${fmtN(Math.floor(bInc))}/s from base</span></div>
-    ${bInc>0?`<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--c)">🏗️ Your base generates <b>$${fmtN(Math.floor(bInc))}/s</b> passively. Build more to increase this.</div>`:'<div style="background:var(--bg3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--muted)">🏗️ Buildings generate passive income. Build the Aircraft Apron to start.</div>'}`+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:8px;color:var(--muted);margin-bottom:2px">BUILT</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:15px;color:var(--g)">${totalBuilt}/${BLDG.length}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:8px;color:var(--muted);margin-bottom:2px">BASE $/s</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:15px;color:var(--c)">$${fmtN(Math.floor(bInc))}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:7px;text-align:center">
+        <div style="font-size:8px;color:var(--muted);margin-bottom:2px">NEXT UP</div>
+        <div style="font-size:9px;color:var(--a);font-weight:700;line-height:1.3">${nextBuild?nextBuild.icon+' '+nextBuild.name.split(' ')[0]:'All built!'}</div>
+      </div>
+    </div>`+
     BLDG.map(b=>{
       const built=S.buildings[b.id];const reqBuilt=!b.req||S.buildings[b.req];const canAfford=!built&&reqBuilt&&S.credits>=b.cost;const reqName=b.req?BLDG.find(x=>x.id===b.req)?.name:'';
       const bInc=BLDG_INCOME[b.id]?`<span style="color:var(--c);font-weight:700"> +$${BLDG_INCOME[b.id]}/s base</span>`:'';
@@ -1004,10 +1078,13 @@ function buyAC(id){
 function launch(id){
   const md=MID.find(x=>x.id===id);if(!md)return;
   const ms=S.missions[id];if(ms.active||(S.owned[md.ac]||0)===0)return;
-  const dur=Math.max(3,md.dur*calcMods().speed);
+  const crewBonus=Math.max(0.3,1-(S.crewLvl[md.ac]||0)*0.12);
+  const dur=Math.max(3,md.dur*calcMods().speed*crewBonus);
   ms.active=true;ms.progress=0;ms.endTime=Date.now()+dur*1000;
   renderMissions();
 }
+function crewUpgradeCost(acId){const lvl=S.crewLvl[acId]||0;return Math.floor(ACD.find(a=>a.id===acId).cost*2.5*Math.pow(2.2,lvl));}
+function hireCrewLvl(acId){const cost=crewUpgradeCost(acId);if(S.credits<cost){toast('Insufficient funds','var(--r)');return;}const lvl=S.crewLvl[acId]||0;if(lvl>=5){toast('Crew maxed','var(--muted)');return;}S.credits-=cost;S.crewLvl[acId]=(lvl+1);toast(`${ACD.find(a=>a.id===acId).name.split(' ')[0]} crew Lv${lvl+1} — ${Math.round((1-Math.max(0.3,1-(lvl+1)*0.12))*100)}% faster`,'var(--c)');saveGame();if(curView==='missions')renderMissions();}
 function buyUpg(id){
   const u=UPG.find(x=>x.id===id);if(!u)return;
   const lvl=S.upgLvl[id]||0;if(lvl>=u.maxL)return;
@@ -1037,7 +1114,8 @@ function engageWar(idx){
   if(won){S.credits+=reward;S.warsWon++;S.totalEarned+=reward;}
   const owned=ACD.filter(a=>(S.owned[a.id]||0)>0);
   const log=owned.map(ac=>won?`<div class="wl-w">✓ ${ac.name.split(' ')[0]} \xd7${S.owned[ac.id]} — success</div>`:`<div class="wl-l">✗ ${ac.name.split(' ')[0]} — failed</div>`).join('');
-  document.getElementById('view-war').innerHTML=`<div class="wres"><div class="wrt" style="color:${won?'var(--g)':'var(--r)'}">${won?'VICTORY':'DEFEAT'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">vs ${e.name}</div>${won?`<div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--a);margin:6px 0">+$${fmtN(reward)}</div>`:`<div style="font-size:12px;color:var(--muted)">Build a stronger fleet.</div>`}<div class="wlog">${log}</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="card hi" style="text-align:center"><div style="font-size:10px;color:var(--muted)">Wars Won</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">${S.warsWon}</div></div><div class="card hi" style="text-align:center"><div style="font-size:10px;color:var(--muted)">Win Rate</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--a)">${S.warsFought>0?Math.round(S.warsWon/S.warsFought*100):0}%</div></div></div><button class="btn br" style="margin-top:8px" onclick="renderWar(true)">Find New Targets</button>`;
+  const winRate=S.warsFought>0?Math.round(S.warsWon/S.warsFought*100):0;
+  document.getElementById('view-war').innerHTML=`<div class="wres" style="border:1px solid ${won?'var(--g)':'var(--r)'}33"><div class="wrt" style="font-size:22px;color:${won?'var(--g)':'var(--r)'}">${won?'⚡ VICTORY':'💀 DEFEAT'}</div><div style="font-size:11px;color:var(--muted);margin-bottom:8px">vs ${e.name} [${e.diff}]</div>${won?`<div style="font-family:'Orbitron',sans-serif;font-size:24px;color:var(--a);margin:8px 0;text-shadow:0 0 20px #f5a62355">+$${fmtN(reward)}</div><div style="font-size:10px;color:var(--muted)">War reward collected</div>`:`<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Enemy too strong. Upgrade your fleet.</div>`}<div class="wlog" style="margin-top:10px">${log}</div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px"><div class="card hi" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--muted)">WARS WON</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">${S.warsWon}</div></div><div class="card hi" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--muted)">WIN RATE</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--a)">${winRate}%</div></div><div class="card hi" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--muted)">FOUGHT</div><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--b)">${S.warsFought}</div></div></div><button class="btn br" style="margin-top:4px" onclick="renderWar(true)">⚔ Find New Targets</button>`;
   checkAchievements();updateHUD();
 }
 function engageTheatre(theatreId,battleIdx){
@@ -1056,7 +1134,11 @@ function engageTheatre(theatreId,battleIdx){
   S.warsFought++;checkAchievements();refreshAll();
 }
 // ═══ ACHIEVEMENTS ═══
+const FLEET_MILESTONES={5:500,10:2000,25:15000,50:80000,100:500000,200:5000000};
+var _lastFleetMilestone=0;
+function checkFleetMilestone(){const fl=fleet();const earned=Object.entries(FLEET_MILESTONES).filter(([k])=>Number(k)<=fl).reduce((s,[,v])=>Math.max(s,v),0);if(earned>_lastFleetMilestone&&_lastFleetMilestone>=0){const bonus=earned;S.credits+=bonus;S.totalEarned+=bonus;toast(`🏆 Fleet milestone! +$${fmtN(bonus)} bonus`,'var(--a)');_lastFleetMilestone=earned;}}
 function checkAchievements(){
+  checkFleetMilestone();
   ACHIEVEMENTS.forEach(a=>{
     if(S.achievements[a.id])return;
     try{if(a.check()){S.achievements[a.id]=true;toast(`${a.icon} ${a.name}: ${a.desc}`,'#f5d623');}}catch(e){}
@@ -1137,6 +1219,9 @@ function updateHUD(){
   document.getElementById('hc').textContent='$'+fmtN(S.credits);
   document.getElementById('hi').textContent='$'+ips().toFixed(1)+'/s';
   document.getElementById('hf').textContent=fleet();
+  const bInc=buildingIncome();
+  const basePill=document.getElementById('base-income-pill');
+  if(basePill){basePill.style.display=bInc>0?'flex':'none';const hbase=document.getElementById('hbase');if(hbase)hbase.textContent='$'+fmtN(Math.floor(bInc))+'/s';}
   document.getElementById('hp').textContent='★'+S.prestigeStars;
   const mp=document.getElementById('hm');if(mp)mp.textContent='🎖'+(S.medals||0);
   if((S.medals||0)>0||S.prestigeStars>=5)document.getElementById('medal-pill').style.display='flex';
