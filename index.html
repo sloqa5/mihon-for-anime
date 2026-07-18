@@ -498,6 +498,7 @@ function updateCamera(){
 }
 applyZoom();updateCamera();
 function setZoom(v){CAM_VIEW=Math.max(38,Math.min(150,v));applyZoom();}
+(function(){var vs=document.getElementById('view-scene');var w=(vs&&vs.clientWidth)||1,h=(vs&&vs.clientHeight)||1;if(w/h<0.8)setZoom(88);})();
 var _drag=false,_dragBtn=0,_lastX=0,_lastY=0;
 cvs.addEventListener('mousedown',function(e){_drag=true;_dragBtn=e.button;_lastX=e.clientX;_lastY=e.clientY;e.preventDefault();});
 window.addEventListener('mouseup',function(){_drag=false;});
@@ -1008,7 +1009,8 @@ function addNavLight(parent,x,y,z,col,phase){var m=new THREE.Mesh(new THREE.Sphe
   if(towerRadar)towerRadar.rotation.y=T*0.7;if(radar2)radar2.rotation.y=-T*0.5;R.render(SC,CAM);})();
 }catch(_3dErr){console.warn('[IRONSKY] 3D init failed:',_3dErr.message);}
 } // end if(THREE loaded)
-function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var activeMissions=MID.filter(function(m){return S.missions[m.id]&&S.missions[m.id].active;}).length;var chips='<div class="s-chip" style="font-size:9px;color:var(--g);font-weight:700">$'+fmtN(ips())+'/s</div>';chips+='<div class="s-chip" style="font-size:9px">Fleet: '+fleet()+'</div>';if(activeMissions>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--b)">Ops: '+activeMissions+' active</div>';if(S.prestigeStars>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--p)">★'+S.prestigeStars+' prestige</div>';chips+='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag·Scroll</div>';if(owned.length){chips+=owned.slice(0,4).map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' \xd7'+S.owned[a.id]+'</div>';}).join('');if(owned.length>4)chips+='<div class="s-chip" style="color:var(--muted)">+'+( owned.length-4)+' more</div>';}el.innerHTML=chips;}
+function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var activeMissions=MID.filter(function(m){return S.missions[m.id]&&S.missions[m.id].active;}).length;var chips='<div class="s-chip" style="font-size:9px;color:var(--g);font-weight:700">$'+fmtN(ips())+'/s</div>';chips+='<div class="s-chip" style="font-size:9px">Fleet: '+fleet()+'</div>';if(activeMissions>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--b)">Ops: '+activeMissions+' active</div>';if(S.prestigeStars>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--p)">★'+S.prestigeStars+' prestige</div>';chips+='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag·Scroll</div>';if(owned.length){chips+=owned.slice(0,4).map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' \xd7'+S.owned[a.id]+'</div>';}).join('');if(owned.length>4)chips+='<div class="s-chip" style="color:var(--muted)">+'+( owned.length-4)+' more</div>';}if(fleet()===0)chips+='<div class="s-chip" style="pointer-events:all;cursor:pointer;color:#000;background:var(--g);border-color:var(--g);font-weight:700;animation:sortie-pulse 1.6s infinite" onclick="document.querySelector(\'.nb[data-v=&quot;fleet&quot;]\').click()">▶ START: Deploy your first F-16</div>';
+el.innerHTML=chips;}
 
 // ═══ RENDER — FLEET ═══
 function renderFleet(){
@@ -1121,7 +1123,7 @@ function renderMissions(){
       ${owned?`<div style="display:flex;align-items:center;gap:0;margin:6px 0">
         <div style="font-size:8px;color:var(--muted);white-space:nowrap;width:65px">${md.name.split(' ').slice(1,3).join(' ')}</div>
         <div class="sr-bar"><div class="sr-fill" id="p${md.id}" style="width:${pct.toFixed(1)}%"></div></div>
-        <div style="font-size:9px;color:var(--b);white-space:nowrap;width:28px;text-align:right">${ms&&ms.active?rem+'s':dur+'s'}</div>
+        <div id="t${md.id}" style="font-size:9px;color:var(--b);white-space:nowrap;width:28px;text-align:right">${ms&&ms.active?rem+'s':dur+'s'}</div>
       </div>
         <div class="sr-bot">
         <div class="sr-info">$${fmtN(ratePerHr)}/hr${isAuto?' · <span style="color:var(--g)">cycling</span>':' · manual'}</div>
@@ -1156,6 +1158,14 @@ function renderUpgrades(){
            </button>`}
       </div>`;
     }).join('');
+  const achDone=ACHIEVEMENTS.filter(a=>S.achievements[a.id]).length;
+  const achSection=`<div class="sh" style="margin-top:16px">Service Record <span>${achDone}/${ACHIEVEMENTS.length}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">`+
+    ACHIEVEMENTS.map(a=>{const got=!!S.achievements[a.id];
+      return `<div class="card" style="margin:0;padding:8px 9px;opacity:${got?1:0.45};border-color:${got?'#00e87a33':'var(--border)'}">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px">${a.icon}</span>
+        <span style="font-size:11px;font-weight:700;color:${got?'var(--g)':'var(--text)'}">${a.name}</span></div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px">${a.desc}</div></div>`;}).join('')+`</div>`;
   document.getElementById('view-upgrades').innerHTML=
     `<div class="sh">Technology <span>Prestige ★${S.prestigeStars}</span></div>`+
     UPG.map(u=>{
@@ -1163,7 +1173,7 @@ function renderUpgrades(){
       if(u.effect==='auto'){const owned=S.owned[u.ac]||0;if(!owned&&!lvl)return`<div class="uc" style="opacity:0.3"><div class="uh"><div class="ui">${u.icon}</div><div><div class="un">${u.name}</div><div class="ud">Requires ${ACD.find(a=>a.id===u.ac)?.name.split(' ')[0]}</div></div></div></div>`;}
       const dots=u.maxL<=20?`<div class="dots">${Array.from({length:Math.min(u.maxL,20)},(_,i)=>`<div class="dot${i<lvl?' on':''}"></div>`).join('')}</div>`:`<div style="font-size:10px;color:var(--b);margin-bottom:7px">Level ${lvl.toLocaleString()} / ${u.maxL===999?'∞':u.maxL}</div>`;
       return`<div class="uc"><div class="uh"><div class="ui">${u.icon}</div><div style="flex:1"><div class="un">${u.name}</div><div class="ud">${u.desc}</div><div class="ul">Level ${lvl}${u.maxL===999?'':'/'+u.maxL}</div></div>${maxed?'<div class="bdg bdg-g">MAX</div>':''}</div>${dots}<button class="btn ${maxed?'bm':(canAfford?'ba':'bm')}" ${(maxed||!canAfford)?'disabled':''} onclick="buyUpg('${u.id}')">${maxed?'Maxed':'Upgrade — $'+fmtN(cost)}</button></div>`;
-    }).join('')+cmdSection;
+    }).join('')+cmdSection+achSection;
 }
 // ═══ RENDER — BASE ═══
 function renderBase(){
@@ -1191,8 +1201,25 @@ function renderBase(){
       const bInc=BLDG_INCOME[b.id]?`<span style="color:var(--c);font-weight:700"> +$${BLDG_INCOME[b.id]}/s base</span>`:'';
       return`<div class="bc${built?' built':''}"><div class="bh"><div class="bi">${b.icon}</div><div style="flex:1"><div class="bn">${b.name}</div><div class="bd">${b.desc}</div><div class="be">${b.effect}${bInc}</div></div>${built?'<div class="bdg bdg-g">Built</div>':''}</div>
       ${built?'':`<button class="btn ${canAfford?'bg':'bm'}" ${!canAfford?'disabled':''} onclick="build('${b.id}')">${!reqBuilt?'Requires: '+reqName:'Build — $'+fmtN(b.cost)}</button>`}</div>`;
-    }).join('');
+    }).join('')+
+    `<div class="sh" style="margin-top:16px">Command Data</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      <button class="btn bb" style="margin:0" onclick="exportSave()">⬇ Export</button>
+      <button class="btn bm" style="margin:0" onclick="importSave()">⬆ Import</button>
+      <button class="btn br" style="margin:0" onclick="hardReset()">✖ Reset</button>
+    </div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px;line-height:1.5">Progress is saved in this browser. Export downloads a backup file you can Import on any device.</div>`;
 }
+function exportSave(){saveGame();try{var blob=new Blob([JSON.stringify(S)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ironsky-save-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},2000);toast('Save exported','var(--g)');}catch(e){toast('Export failed','var(--r)');}}
+function importSave(){var inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=function(){var f=inp.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){try{var d=JSON.parse(r.result);if(!d||typeof d!=='object'||!d.owned)throw 0;
+      S=Object.assign(defState(),d);saveGame();refreshAll();toast('Save imported — welcome back','var(--g)');}
+      catch(e){toast('Invalid save file','var(--r)');}};
+    r.readAsText(f);};
+  inp.click();}
+function hardReset(){if(!confirm('Wipe ALL progress and start over?'))return;if(!confirm('Really? This cannot be undone.'))return;
+  S=defState();saveGame();refreshAll();toast('Fresh start, Commander','var(--a)');}
 // ═══ RENDER — WAR ═══
 let warEnemies=null;
 function renderWar(forceNew=false){
@@ -1408,12 +1435,15 @@ function startFlightGame(acId){
   wrap.style.cssText='position:fixed;inset:0;z-index:300;background:#000;touch-action:none;overflow:hidden;font-family:Rajdhani,sans-serif';
   wrap.innerHTML=
     '<canvas id="fg-cvs" style="position:absolute;inset:0;width:100%;height:100%"></canvas>'+
-    '<div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:none;flex-wrap:wrap;justify-content:center;max-width:96vw">'+
+    '<style>#fg-top{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;max-width:96vw}'+
+    '#fg-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}'+
+    '@media (max-width:560px){#fg-top{top:40px;left:8px;transform:none;align-items:flex-start;max-width:calc(100vw - 112px)}#fg-chips{justify-content:flex-start}#fg-chips .s-chip{font-size:8.5px;padding:2px 6px}#fg-radar{width:86px!important;height:86px!important}#fg-hint{display:none}}</style>'+
+    '<div id="fg-top"><div id="fg-chips">'+
       '<div class="s-chip">TIME <b id="fg-time">120</b></div><div class="s-chip">SCORE <b id="fg-score">0</b></div>'+
       '<div class="s-chip">KILLS <b id="fg-kills">0</b></div><div class="s-chip">SPD <b id="fg-spd">0</b></div>'+
       '<div class="s-chip">ALT <b id="fg-alt">0</b></div><div class="s-chip">MSL <b id="fg-msl">'+st.msl+'</b></div>'+
       '<div class="s-chip">STREAK <b id="fg-streak">—</b></div></div>'+
-    '<div style="position:absolute;top:44px;left:50%;transform:translateX(-50%);width:180px;height:7px;background:#ffffff22;border-radius:4px;overflow:hidden;pointer-events:none"><div id="fg-hp" style="height:100%;width:100%;background:var(--g);border-radius:4px"></div></div>'+
+    '<div style="width:180px;height:7px;background:#ffffff22;border-radius:4px;overflow:hidden"><div id="fg-hp" style="height:100%;width:100%;background:var(--g);border-radius:4px"></div></div></div>'+
     '<canvas id="fg-radar" width="220" height="220" style="position:absolute;top:8px;right:8px;width:110px;height:110px;border-radius:50%;border:1px solid #00e87a44;background:rgba(4,12,8,0.6)"></canvas>'+
     '<button id="fg-exit" style="position:absolute;top:8px;left:8px;background:rgba(10,14,18,0.8);border:1px solid var(--border2);color:var(--r);border-radius:7px;padding:6px 12px;font-family:Orbitron,sans-serif;font-size:10px;cursor:pointer">✕ ABORT</button>'+
     '<div id="fg-stickbase" style="position:absolute;left:26px;bottom:26px;width:120px;height:120px;border-radius:50%;border:1.5px solid #ffffff2e;background:rgba(255,255,255,0.04)"><div id="fg-stick" style="position:absolute;left:38px;top:38px;width:44px;height:44px;border-radius:50%;background:rgba(0,232,122,0.25);border:1.5px solid #00e87a66"></div></div>'+
@@ -1422,7 +1452,7 @@ function startFlightGame(acId){
     '<input id="fg-thr" type="range" min="0" max="100" value="80" style="position:absolute;right:-28px;bottom:170px;width:120px;transform:rotate(-90deg);accent-color:#00e87a">'+
     '<div id="fg-vig" style="position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(255,40,40,0);transition:box-shadow 0.5s"></div>'+
     '<div id="fg-msg" style="position:absolute;top:34%;left:50%;transform:translate(-50%,-50%);font-family:Orbitron,sans-serif;font-size:15px;color:var(--a);text-shadow:0 0 14px #f5a62388;pointer-events:none;text-align:center"></div>'+
-    '<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:#ffffff55;pointer-events:none;white-space:nowrap">W/S pitch · A/D roll · Q/E yaw · SHIFT/CTRL throttle · SPACE gun · F missile</div>';
+    '<div id="fg-hint" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:#ffffff55;pointer-events:none;white-space:nowrap">W/S pitch · A/D roll · Q/E yaw · SHIFT/CTRL throttle · SPACE gun · F missile</div>';
   document.body.appendChild(wrap);
   var cvs=document.getElementById('fg-cvs');
   var ren=new THREE.WebGLRenderer({canvas:cvs,antialias:true});
@@ -1546,7 +1576,7 @@ function startFlightGame(acId){
   ['touchstart','mousedown'].forEach(function(ev){mslBtn.addEventListener(ev,function(e){fireMissile();e.preventDefault();});});
   document.getElementById('fg-thr').addEventListener('input',function(){throttle=this.value/100;});
   document.getElementById('fg-exit').addEventListener('click',function(){endFlight('MISSION ABORTED');});
-  function onRes(){var w=wrap.clientWidth,h=wrap.clientHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  function onRes(){var w=wrap.clientWidth,h=wrap.clientHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.fov=w/h<0.9?76:64;cam.updateProjectionMatrix();}
   window.addEventListener('resize',onRes);G.listeners.push(['resize',onRes]);onRes();
   function fireMissile(){if(msl<=0||G.done){if(msl<=0)msg('NO MISSILES','var(--r)');return;}
     var fwd=fwdOf(player).clone();var best=null,bd=1e9;var lockRange=(acId==='e3'||acId==='f35')?3400:2500;
@@ -1720,7 +1750,7 @@ function startFlightGame(acId){
     cam.position.lerp(camTgt,1-Math.exp(-6*dt));
     var upMix=V1.set(0,1,0).applyQuaternion(player.quaternion).multiplyScalar(0.45).add(new THREE.Vector3(0,0.55,0)).normalize();
     cam.up.lerp(upMix,0.25);
-    var look=fwdOf(player).clone().multiplyScalar(80).add(player.position);
+    var look=fwdOf(player).clone().multiplyScalar(45).add(player.position);
     cam.lookAt(look);
     ren.render(scn,cam);
   }
@@ -1864,7 +1894,7 @@ function hireCommander(id){
 }
 function engageWar(idx){
   const e=warEnemies[idx];if(!e)return;
-  S.warsFought++;const won=Math.random()*100<e.winChance;
+  S.warsFought++;const won=Math.random()*100<e.winChance;sfx(won?'win':'lose',0.35);
   const warRewMult=1+(S.cmdLvl['hawk']||0)*0.4;
   const reward=Math.floor(e.reward*warRewMult);
   if(won){S.credits+=reward;S.warsWon++;S.totalEarned+=reward;}
@@ -1880,7 +1910,7 @@ function engageTheatre(theatreId,battleIdx){
   const wins=S.theatreWins[theatreId]||0;if(wins!==battleIdx)return;
   const wp=warPower();const enemyPower=Math.floor(wp*battle.pm*(0.85+Math.random()*0.3));
   const winChance=Math.min(95,Math.max(5,Math.round(wp/(wp+enemyPower)*100)));
-  const won=Math.random()*100<winChance;
+  const won=Math.random()*100<winChance;sfx(won?'win':'lose',0.35);
   const warRewMult=1+(S.cmdLvl['hawk']||0)*0.4;
   const reward=Math.floor(battle.base*warRewMult);
   if(won){S.theatreWins[theatreId]=(wins||0)+1;S.credits+=reward;S.totalEarned+=reward;S.warsWon++;
@@ -1947,6 +1977,7 @@ setInterval(()=>{
     const ms=S.missions[md.id];if(!ms.active)return;
     ms.progress=1-(ms.endTime-now)/(md.dur*m.speed*1000);
     const pb=document.getElementById('p'+md.id);if(pb)pb.style.width=Math.min(100,ms.progress*100).toFixed(1)+'%';
+    const tb=document.getElementById('t'+md.id);if(tb)tb.textContent=Math.max(0,Math.ceil((ms.endTime-now)/1000))+'s';
     if(now>=ms.endTime){
       const owned=S.owned[md.ac]||0;
       const ownedBonus=1+0.45*Math.sqrt(owned);
@@ -1960,7 +1991,7 @@ setInterval(()=>{
   if(upd&&curView==='missions')renderMissions();
   checkNavDots();
 },200);
-setInterval(()=>{updateSceneHUD();if(curView==='fleet')renderFleet();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='action')renderAction();},1200);
+setInterval(()=>{checkAchievements();updateSceneHUD();if(curView==='fleet')renderFleet();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='action')renderAction();},1200);
 function checkNavDots(){
   const fl=fleet();
   document.getElementById('dot-fleet').classList.toggle('show',ACD.some(a=>fl>=a.unlockF&&!(S.owned[a.id]>0)&&S.credits>=a.cost));
@@ -1973,7 +2004,7 @@ var _lastIpsMilestone=0;const _IPS_MILESTONES=[100,1e3,1e4,1e5,1e6,1e8,1e10,1e12
 function updateHUD(){
   checkIpsMilestone();
   document.getElementById('hc').textContent='$'+fmtN(S.credits);
-  document.getElementById('hi').textContent='$'+ips().toFixed(1)+'/s';
+  var _i=ips();document.getElementById('hi').textContent='$'+(_i>=1000?fmtN(_i):_i.toFixed(1))+'/s';
   document.getElementById('hf').textContent=fleet();
   const bInc=buildingIncome();
   const basePill=document.getElementById('base-income-pill');
