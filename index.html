@@ -663,7 +663,7 @@ function buildF16(hex){var g=new THREE.Group();
   // bubble canopy (gold tinted)
   addCanopy(g,3.1,0.62,1.7,0.85,0.72,mkStd(0x8a6a18,0.1,0.95));
   // cropped-delta wing with LERX
-  addWing(g,[[5.4,0.4],[2.6,1.15],[1.55,4.98],[0.35,4.98],[-1.15,1.15],[-1.5,0.4]],0.16,0.12,lt);
+  addWing(g,[[5.4,0.4],[2.6,1.15],[-0.6,4.98],[-1.7,4.98],[-2.3,1.15],[-2.5,0.4]],0.16,0.12,lt);
   // stabilators + ventral fins
   addWing(g,[[-4.9,0.35],[-6.2,1.9],[-7.15,1.9],[-7.35,0.35]],0.12,0.1,lt);
   addFin(g,[[-3.2,0],[-4.1,-0.85],[-4.9,-0.85],[-5,0]],0.09,0.55,0.55,dk);
@@ -676,8 +676,8 @@ function buildF16(hex){var g=new THREE.Group();
   addM(g,new THREE.CylinderGeometry(0.36,0.44,0.5,14),mkStd(0x2b2d30,0.5,0.8),-7.7,0.1,0,0,0,Math.PI/2);
   addBurner(g,-8,0.1,0,0xff7722,0.3);
   // wingtip AIM-9s
-  [4.98,-4.98].forEach(function(z){addM(g,new THREE.CylinderGeometry(0.09,0.09,2.9,8),mkStd(0xd8dadd,0.4,0.5),0.9,0.12,z,0,0,Math.PI/2);
-    addM(g,new THREE.ConeGeometry(0.09,0.35,8),mkStd(0x33383d),2.5,0.12,z,0,0,-Math.PI/2);});
+  [4.98,-4.98].forEach(function(z){addM(g,new THREE.CylinderGeometry(0.09,0.09,2.9,8),mkStd(0xd8dadd,0.4,0.5),-1.0,0.12,z,0,0,Math.PI/2);
+    addM(g,new THREE.ConeGeometry(0.09,0.35,8),mkStd(0x33383d),0.6,0.12,z,0,0,-Math.PI/2);});
   addGear(g,3.4,-0.5,0,1.15,0.3,false);addGear(g,-0.4,-0.45,1.15,1.2,0.38,false);addGear(g,-0.4,-0.45,-1.15,1.2,0.38,false);
   return finishAC(g,0.8);}
 
@@ -830,7 +830,7 @@ function buildF22(hex){var g=new THREE.Group();
   addM(g,fuseGeo([[-8.5,0.5],[-4,0.72],[1,0.8],[4.5,0.7],[7,0.45],[9.4,0.04]],14,1,1),top,0,0.85,0);
   addCanopy(g,4.4,1.15,1.9,0.8,0.75,mkStd(0x6f5a1e,0.1,0.95));
   // trapezoidal diamond wing
-  addWing(g,[[2.4,1.95],[-1.2,6.8],[-2.6,6.8],[-3.6,1.95]],0.2,0.45,lt);
+  addWing(g,[[2.4,1.95],[-2.0,6.8],[-2.9,6.8],[-4.2,1.95]],0.2,0.45,lt);
   // full-span stabilators
   addWing(g,[[-4.9,1.7],[-6.9,4.3],[-8.5,4.3],[-8.7,1.7]],0.15,0.5,lt);
   // outward-canted twin tails
@@ -853,9 +853,9 @@ function buildB52(hex){var g=new THREE.Group();
   addM(g,new THREE.SphereGeometry(1,14,10),top,19,2.9,0).scale.set(3.4,1,1.15); // cockpit hump
   addM(g,new THREE.BoxGeometry(1.8,0.6,1.9),mkStd(0x12161a,0.2,0.8),20.4,3.15,0);
   // 35°-swept shoulder wing
-  addWing(g,[[4.2,1.5],[-8.6,28.2],[-11.2,28.2],[-2.2,1.5]],0.6,2.75,lt);
+  addWing(g,[[4.2,1.5],[-15.2,28.2],[-17.6,28.2],[-2.2,1.5]],0.6,2.75,lt);
   // 8 TF33s in 4 twin pods
-  [[8.5,2.05],[15.5,-1.15]].forEach(function(zc){[1,-1].forEach(function(s){var z=zc[0]*s,x=zc[1];
+  [[8.5,0.6],[15.5,-4.4]].forEach(function(zc){[1,-1].forEach(function(s){var z=zc[0]*s,x=zc[1];
     [0.62,-0.62].forEach(function(dz){addM(g,new THREE.CylinderGeometry(0.7,0.64,3.9,12),lt,x,0.9,z+dz,0,0,Math.PI/2);
       addM(g,new THREE.CylinderGeometry(0.72,0.7,0.25,12),dk,x+1.95,0.9,z+dz,0,0,Math.PI/2);
       addBurner(g,x-2.15,0.9,z+dz,0x4455ff,0.2);});
@@ -898,7 +898,7 @@ function buildF35(hex){var g=new THREE.Group();
 // ═══ B-21 RAIDER — clean next-gen flying wing, ~40m span ═══
 function buildB21(hex){var g=new THREE.Group();
   var skin=mkStd(0x9ba1a9,0.45,0.35),dk=mkStd(0x3a3f45,0.6,0.3);
-  addWing(g,[[9.4,0],[7.8,1.6],[-4.8,20],[-7,20],[-2.7,10.4],[-8.6,0]],0.55,0,skin);
+  addWing(g,[[9.4,0],[7.8,1.6],[-4.8,20],[-7,20],[-10.4,0]],0.55,0,skin);
   var body=new THREE.SphereGeometry(1,20,12);body.scale(5.8,1.2,2.6);addM(g,body,skin,1.6,0.3,0);
   addM(g,new THREE.BoxGeometry(1.7,0.3,2),mkStd(0x141a20,0.2,0.8),4.7,0.85,0); // flush windscreen
   // buried inlets — shallow angled slots
