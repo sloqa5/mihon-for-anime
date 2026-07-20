@@ -1,4 +1,4 @@
-const CACHE = 'ironsky-v12';
+const CACHE = 'ironsky-v13';
 const PRECACHE = [
   '/mihon-for-anime/',
   '/mihon-for-anime/index.html',
