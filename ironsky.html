@@ -54,7 +54,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .arole{font-size:9.5px;color:var(--muted)}
 .astat{display:flex;justify-content:space-between;font-size:10px}.astat .k{color:var(--muted)}.astat .v{color:var(--g);font-weight:700}
 .aspec{font-size:9.5px;color:var(--muted);font-style:italic;line-height:1.4}
-.btn{border:none;border-radius:7px;padding:7px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:all 0.12s;width:100%;margin-top:7px}
+.btn{border:none;border-radius:7px;padding:10px 12px;min-height:40px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:all 0.12s;width:100%;margin-top:7px}
 .bg{background:var(--g2);color:#000}.bg:hover:not(:disabled){background:var(--g);box-shadow:0 0 10px #00e87a44}
 .ba{background:#b07018;color:#000}.ba:hover:not(:disabled){background:var(--a);box-shadow:0 0 10px #f5a62344}
 .br{background:#cc2233;color:#fff}.br:hover:not(:disabled){background:var(--r);box-shadow:0 0 10px #ff475744}
@@ -103,7 +103,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .thcard.conquered{border-color:#00e87a44;background:linear-gradient(135deg,#0a1810,#0c1525)}
 .thname{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--b);letter-spacing:2px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
 .bgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:7px}
-.bbtn{border-radius:5px;padding:5px 2px;font-size:8px;font-family:'Orbitron',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;border:1px solid var(--border)}
+.bbtn{border-radius:5px;padding:10px 2px;font-size:8.5px;font-family:'Orbitron',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;border:1px solid var(--border)}
 .bbtn.won{background:#00e87a18;border-color:#00e87a44;color:var(--g)}
 .bbtn.avail{background:#1e90ff18;border-color:#1e90ff44;color:var(--b);cursor:pointer}
 .bbtn.locked{background:var(--card2);color:var(--muted);cursor:not-allowed;opacity:0.4}
@@ -145,6 +145,14 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 #toast{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;max-width:92vw}
 .tmsg{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:6px 13px;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;animation:ta 3s forwards}
 @keyframes ta{0%{opacity:0;transform:translateY(6px)}10%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0}}
+@media (max-width:480px){
+#topbar{gap:5px;padding:0 8px}
+#logo{font-size:11px;letter-spacing:1.5px}
+.pill{padding:3px 6px;gap:4px}
+.pill .l{font-size:8px}
+.pill .v{font-size:10px}
+#fleet-pill{display:none}
+}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
@@ -153,7 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
   <div id="logo">IRONSKY</div>
   <div class="pill"><span class="l">Credits</span><span class="v" id="hc">$500</span></div>
   <div class="pill"><span class="l">$/s</span><span class="v g" id="hi">$0</span></div>
-  <div class="pill"><span class="l">Fleet</span><span class="v b" id="hf">0</span></div>
+  <div class="pill" id="fleet-pill"><span class="l">Fleet</span><span class="v b" id="hf">0</span></div>
   <div class="pill" style="display:none" id="base-income-pill"><span class="l">Base</span><span class="v c" id="hbase">$0/s</span></div>
   <div class="pill" id="prestige-pill" onclick="showPrestige()"><span class="l">Stars</span><span class="v p" id="hp">★0</span></div>
   <div class="pill" id="medal-pill" style="display:none"><span class="l">Medals</span><span class="v c" id="hm">🎖0</span></div>
@@ -1027,7 +1035,7 @@ function addNavLight(parent,x,y,z,col,phase){var m=new THREE.Mesh(new THREE.Sphe
 }catch(_3dErr){console.warn('[IRONSKY] 3D init failed:',_3dErr.message);}
 } // end if(THREE loaded)
 function updateSceneHUD(){var el=document.getElementById('scene-hud');if(!el)return;if(typeof THREE==='undefined'){el.innerHTML='<div class="s-chip" style="font-size:9px;color:var(--muted)">3D unavailable — play via Fleet ▸ Ops ▸ Tech ▸ Build ▸ War tabs</div>';return;}var owned=ACD.filter(function(a){return(S.owned[a.id]||0)>0;});var activeMissions=MID.filter(function(m){return S.missions[m.id]&&S.missions[m.id].active;}).length;var chips='<div class="s-chip" style="font-size:9px;color:var(--g);font-weight:700">$'+fmtN(ips())+'/s</div>';chips+='<div class="s-chip" style="font-size:9px">Fleet: '+fleet()+'</div>';if(activeMissions>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--b)">Ops: '+activeMissions+' active</div>';if(S.prestigeStars>0)chips+='<div class="s-chip" style="font-size:9px;color:var(--p)">★'+S.prestigeStars+' prestige</div>';chips+='<div class="s-chip" style="font-size:9px;color:var(--muted)">Drag·Scroll</div>';if(owned.length){chips+=owned.slice(0,4).map(function(a){return'<div class="s-chip">'+a.id.toUpperCase()+' \xd7'+S.owned[a.id]+'</div>';}).join('');if(owned.length>4)chips+='<div class="s-chip" style="color:var(--muted)">+'+( owned.length-4)+' more</div>';}if(fleet()===0)chips+='<div class="s-chip" style="pointer-events:all;cursor:pointer;color:#000;background:var(--g);border-color:var(--g);font-weight:700;animation:sortie-pulse 1.6s infinite" onclick="document.querySelector(\'.nb[data-v=&quot;fleet&quot;]\').click()">▶ START: Deploy your first F-16</div>';
-el.innerHTML=chips;}
+if(el._last!==chips){el._last=chips;el.innerHTML=chips;}}
 
 // ═══ RENDER — FLEET ═══
 function renderFleet(){
@@ -1043,7 +1051,7 @@ function renderFleet(){
   document.getElementById('view-fleet').innerHTML=
     newPlayerHint+
     `<div class="sh">Aircraft Roster <span>${fl} total · $${fmtN(curIps)}/s</span>
-      <button onclick="toggleBuyMode()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--g);padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:700">${modeLabel}</button>
+      <button onclick="toggleBuyMode()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--g);padding:8px 14px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700">${modeLabel}</button>
     </div><div class="acg">`+
     ACD.map(ac=>{
       const cnt=S.owned[ac.id]||0;const locked=fl<ac.unlockF;
@@ -1149,8 +1157,8 @@ function renderMissions(){
             ?`<div style="font-size:9px;color:var(--b)">✈ In flight</div>`
             :isAuto
               ?`<div style="font-size:9px;color:var(--g)">⚡ Auto-queued</div>`
-              :`<button class="btn bb" style="padding:3px 12px;font-size:10px;margin:0" onclick="launch('${md.id}')">▶ LAUNCH</button>`}
-          ${(()=>{const cl=S.crewLvl[ac.id]||0;const maxed=cl>=5;const cc=crewUpgradeCost(ac.id);const canC=!maxed&&S.credits>=cc;return maxed?`<div style="font-size:8px;color:var(--g);padding:2px 5px;background:#00e87a11;border-radius:3px">CREW MAX</div>`:`<button onclick="hireCrewLvl('${ac.id}')" style="background:${canC?'#003a4a':'var(--card2)'};border:1px solid ${canC?'var(--c)33':'var(--border)'};color:${canC?'var(--c)':'var(--muted)'};padding:2px 6px;border-radius:4px;font-size:8px;cursor:pointer;font-family:inherit">⚙ Crew Lv${cl+1} $${fmtN(cc)}</button>`;})()}
+              :`<button class="btn bb" style="padding:9px 16px;font-size:11px;margin:0;min-height:36px" onclick="launch('${md.id}')">▶ LAUNCH</button>`}
+          ${(()=>{const cl=S.crewLvl[ac.id]||0;const maxed=cl>=5;const cc=crewUpgradeCost(ac.id);const canC=!maxed&&S.credits>=cc;return maxed?`<div style="font-size:8px;color:var(--g);padding:2px 5px;background:#00e87a11;border-radius:3px">CREW MAX</div>`:`<button onclick="hireCrewLvl('${ac.id}')" style="background:${canC?'#003a4a':'var(--card2)'};border:1px solid ${canC?'var(--c)33':'var(--border)'};color:${canC?'var(--c)':'var(--muted)'};padding:8px 10px;border-radius:6px;font-size:9.5px;cursor:pointer;font-family:inherit;min-height:34px">⚙ Crew Lv${cl+1} $${fmtN(cc)}</button>`;})()}
         </div>
       </div>`:
       `<div style="font-size:10px;color:var(--muted);padding:4px 0">Buy aircraft to run sorties (${ac.unlockF} fleet needed)</div>`}
@@ -1310,7 +1318,7 @@ function renderAction(){
 }
 
 // ═══ MINI-GAMES ═══
-function closeMinigame(){const m=document.getElementById('mg-modal');if(m)m.remove();if(window._mgRAF)cancelAnimationFrame(window._mgRAF);window._mgRAF=null;if(window._mgCleanup){window._mgCleanup();window._mgCleanup=null;}}
+function closeMinigame(){if(window._mgTimer){clearInterval(window._mgTimer);window._mgTimer=null;}const m=document.getElementById('mg-modal');if(m)m.remove();if(window._mgRAF)cancelAnimationFrame(window._mgRAF);window._mgRAF=null;if(window._mgCleanup){window._mgCleanup();window._mgCleanup=null;}}
 
 // --- RADAR INTERCEPT ---
 function startRadarGame(){
@@ -1324,7 +1332,7 @@ function startRadarGame(){
   function handleHit(mx,my){if(gameOver)return;for(let i=blips.length-1;i>=0;i--){const b=blips[i];if(Math.hypot(mx-b.x,my-b.y)<40){blips.splice(i,1);hits++;score+=2000;const se=document.getElementById('mg-score');const he=document.getElementById('mg-hits');if(se)se.textContent=score;if(he)he.textContent=hits;break;}}}
   canvas.addEventListener('click',function(e){const r=canvas.getBoundingClientRect();const scaleX=300/r.width;const scaleY=300/r.height;handleHit((e.clientX-r.left)*scaleX,(e.clientY-r.top)*scaleY);});
   canvas.addEventListener('touchstart',function(e){e.preventDefault();const r=canvas.getBoundingClientRect();const scaleX=300/r.width;const scaleY=300/r.height;const t=e.touches[0];handleHit((t.clientX-r.left)*scaleX,(t.clientY-r.top)*scaleY);},{passive:false});
-  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['radar']||0)<score)S.actionBest['radar']=score;S.actionCD['radar']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">MISSION COMPLETE</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  const timerInt=window._mgTimer=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['radar']||0)<score)S.actionBest['radar']=score;S.actionCD['radar']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">MISSION COMPLETE</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
   function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=(now-lastTime)/1000;lastTime=now;sweepAngle+=dt*1.5;if(now-lastSpawn>1600&&blips.length<10){spawnBlip();lastSpawn=now;}for(let i=blips.length-1;i>=0;i--){blips[i].x+=blips[i].vx;blips[i].y+=blips[i].vy;blips[i].age++;if(Math.hypot(blips[i].x-150,blips[i].y-150)<28)blips.splice(i,1);}ctx.fillStyle='#060e14';ctx.fillRect(0,0,300,300);ctx.strokeStyle='#00e87a22';ctx.lineWidth=1;for(let r=35;r<=140;r+=35){ctx.beginPath();ctx.arc(150,150,r,0,Math.PI*2);ctx.stroke();}ctx.strokeStyle='#00e87a15';ctx.beginPath();ctx.moveTo(10,150);ctx.lineTo(290,150);ctx.moveTo(150,10);ctx.lineTo(150,290);ctx.stroke();ctx.save();ctx.translate(150,150);ctx.rotate(sweepAngle);const grad=ctx.createLinearGradient(0,0,140,0);grad.addColorStop(0,'rgba(0,232,122,0.55)');grad.addColorStop(1,'rgba(0,232,122,0)');ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,140,-0.45,0.45);ctx.closePath();ctx.fill();ctx.restore();blips.forEach(b=>{const pulse=Math.sin(b.age*0.25)*0.5+0.5;ctx.fillStyle=`rgba(255,71,87,${0.7+pulse*0.3})`;ctx.shadowBlur=8;ctx.shadowColor='#ff4757';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;});ctx.fillStyle='#00e87a';ctx.beginPath();ctx.arc(150,150,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#00e87a44';ctx.lineWidth=2;ctx.beginPath();ctx.arc(150,150,28,0,Math.PI*2);ctx.stroke();if(!gameOver)window._mgRAF=requestAnimationFrame(draw);}
   window._mgRAF=requestAnimationFrame(draw);
 }
@@ -1344,7 +1352,7 @@ function startBombingGame(){
   function dropBomb(){if(gameOver)return;bombs.push({x:acX,y:30,vy:4,explode:0});}
   canvas.addEventListener('click',dropBomb);
   canvas.addEventListener('touchstart',function(e){e.preventDefault();dropBomb();},{passive:false});
-  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['bombing']||0)<score)S.actionBest['bombing']=score;S.actionCD['bombing']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">BOMBS AWAY</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  const timerInt=window._mgTimer=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['bombing']||0)<score)S.actionBest['bombing']=score;S.actionCD['bombing']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">BOMBS AWAY</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
   spawnTarget();spawnTarget();
   function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=(now-lastTime)/16;lastTime=now;scrollY=(scrollY+1.5*dt)%380;
   if(Math.random()<0.02*dt&&targets.length<6)spawnTarget();
@@ -1379,7 +1387,7 @@ function startCombatGame(){
   window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
   window._mgCleanup=function(){window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);};
   function spawnEnemy(){const side=Math.floor(Math.random()*4);let ex,ey;if(side===0){ex=Math.random()*280+10;ey=-15;}else if(side===1){ex=315;ey=Math.random()*280+10;}else if(side===2){ex=Math.random()*280+10;ey=315;}else{ex=-15;ey=Math.random()*280+10;}const angle=Math.atan2(py-ey,px-ex);const spd=1+Math.random()*1.2;enemies.push({x:ex,y:ey,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,hp:2});}
-  const timerInt=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window._mgCleanup=null;const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['combat']||0)<score)S.actionBest['combat']=score;S.actionCD['combat']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">ENGAGED</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
+  const timerInt=window._mgTimer=setInterval(()=>{timeLeft--;const te=document.getElementById('mg-timer');if(te)te.textContent=timeLeft;if(timeLeft<=0){gameOver=true;clearInterval(timerInt);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window._mgCleanup=null;const reward=score*fleetBonus;S.credits+=reward;S.totalEarned+=reward;if((S.actionBest['combat']||0)<score)S.actionBest['combat']=score;S.actionCD['combat']=Date.now()+90000;saveGame();checkAchievements();updateHUD();const box=document.querySelector('.mgbox');if(box){const old=box.querySelector('#mg-canvas');if(old)old.style.display='none';box.innerHTML+=`<div style="text-align:center;padding:14px"><div style="font-family:'Orbitron',sans-serif;font-size:16px;color:var(--g)">ENGAGED</div><div style="font-size:12px;color:var(--muted);margin:6px 0">Score ${score} \xd7${fleetBonus} fleet</div><div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--a)">+$${fmtN(reward)}</div><button class="btn bg" style="margin-top:10px" onclick="closeMinigame();if(curView==='action')renderAction()">COLLECT</button></div>`;};}},1000);
   function draw(){if(!document.getElementById('mg-canvas')){cancelAnimationFrame(window._mgRAF);return;}const now=Date.now();const dt=Math.min((now-lastTime)/16,3);lastTime=now;
   // move player
   const spd=2.5;if(keys['ArrowLeft']||keys['KeyA']||keys['a'])pvx=-spd;else if(keys['ArrowRight']||keys['KeyD']||keys['d'])pvx=spd;else pvx*=0.8;
@@ -2037,6 +2045,20 @@ function checkEvent(){
   const evtInterval=setInterval(()=>{const rem=Math.max(0,Math.ceil((S.eventActive.endTime-Date.now())/1000));const remEl=document.getElementById('evt-rem');if(remEl)remEl.textContent=`${rem}s remaining`;if(rem<=0){clearInterval(evtInterval);dismissEvent();}},1000);
 }
 function dismissEvent(){const b=document.getElementById('evtbanner');if(b)b.style.display='none';}
+// ═══ SUPPLY CRATE (tap bonus on the base screen) ═══
+var nextCrate=Date.now()+30000;
+function tickCrate(){
+  if(document.getElementById('crate-btn'))return;
+  if(Date.now()<nextCrate||curView!=='scene')return;
+  var host=document.getElementById('view-scene');if(!host)return;
+  var b=document.createElement('button');b.id='crate-btn';b.textContent='📦';
+  b.style.cssText='position:absolute;z-index:15;font-size:34px;background:none;border:none;cursor:pointer;filter:drop-shadow(0 0 10px #f5a623);animation:sortie-pulse 1.2s infinite;padding:10px;left:'+(12+Math.random()*68)+'%;top:'+(16+Math.random()*52)+'%';
+  b.onclick=function(){var amt=Math.max(50,Math.floor(ips()*90));S.credits+=amt;S.totalEarned+=amt;
+    toast('📦 Supply drop! +$'+fmtN(amt),'var(--a)');sfx('cash');b.remove();
+    nextCrate=Date.now()+45000+Math.random()*45000;};
+  host.appendChild(b);
+  setTimeout(function(){if(b.parentNode){b.remove();nextCrate=Date.now()+30000+Math.random()*30000;}},12000);
+}
 // ═══ AUTO DISPATCH ═══
 function runAuto(){
   UPG.filter(u=>u.effect==='auto'&&(S.upgLvl[u.id]||0)>0).forEach(u=>{
@@ -2068,7 +2090,7 @@ setInterval(()=>{
   if(upd&&curView==='missions')renderMissions();
   checkNavDots();
 },200);
-setInterval(()=>{checkAchievements();updateSceneHUD();if(curView==='fleet')renderFleet();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='action')renderAction();},1200);
+setInterval(()=>{checkAchievements();updateSceneHUD();tickCrate();if(curView==='fleet')renderFleet();else if(curView==='upgrades')renderUpgrades();else if(curView==='base')renderBase();else if(curView==='action')renderAction();},1200);
 function checkNavDots(){
   const fl=fleet();
   document.getElementById('dot-fleet').classList.toggle('show',ACD.some(a=>fl>=a.unlockF&&!(S.owned[a.id]>0)&&S.credits>=a.cost));
